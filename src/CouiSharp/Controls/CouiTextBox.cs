@@ -140,12 +140,13 @@ public class CouiTextBox : CouiControl
 
     protected override void OnPaintContent(Graphics g)
     {
-        RectangleF rect = new RectangleF(0.5f, 0.5f, Width - 1f, Height - 1f);
+        RectangleF rect = new RectangleF(0f, 0f, Width, Height);
         using var path = Squircle.RoundedRect(rect, Dpf(CouiShape.InputRadius));
 
         Fill(g, path, FieldFill());
         bool focused = _inner.Focused || Focused;
-        Stroke(g, path, focused ? Palette.Primary : Palette.Divider,
+        float radius = Dpf(CouiShape.InputRadius);
+        StrokeInset(g, rect, radius, focused ? Palette.Primary : Palette.Divider,
             focused ? 1.5f : CouiShape.Stroke);
 
         if (!_inner.Visible) _inner.Visible = true;

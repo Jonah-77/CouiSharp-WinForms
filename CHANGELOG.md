@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.2 — 2026-11-20
+
+Edge pass: buttons were clicked, hovered and focused at a 150% scale factor and the resulting
+bitmaps were read pixel by pixel.
+
+### Fixed
+
+- **A translucent row along capsule edges.** Shapes were filled into a rectangle offset by half a
+  pixel and shortened by one pixel, so the outermost row along a button's top and left edge was
+  only half covered. At 150% scaling this showed up as a lighter rim (a `#255A8F` row sitting above
+  the `#2B95FF` fill on the primary button). Shape bounds now hug the client box exactly.
+- **Focus rings were cut into flat segments at the ends of a capsule.** The ring stroked the button
+  silhouette with a 2dp pen, so half of the stroke fell outside the control, got clipped, and left
+  a pale seam between ring and fill. Rings are now drawn on an inward-offset path, producing a
+  continuous outline just inside the shape.
+- **Hairline borders were clipped the same way** on cards, input fields and check boxes; they now
+  stroke an inset path so the full pen width is visible.
+- `CouiSlider`'s focus ring could exceed the control bounds when the slider was short; it is now
+  clamped to the control and inset like the other rings.
+
+### Changed
+
+- `CouiControl.DrawFocusRing` takes the shape bounds and corner radius instead of a prepared path,
+  so it can inset the ring itself. A new `StrokeInset` helper does the same for outline strokes.
+
 ## 0.1.1 — 2026-11-20
 
 Interaction pass over the demo: every switch, chip, checkbox, radio, slider and button was clicked

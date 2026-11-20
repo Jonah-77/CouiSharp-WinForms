@@ -51,7 +51,7 @@ public class CouiChip : CouiControl
     protected override void OnPaintContent(Graphics g)
     {
         float height = Math.Min(Height, Dpf(CouiShape.ChipHeight));
-        RectangleF rect = new RectangleF(0.5f, (Height - height) / 2f + 0.5f, Width - 1f, height - 1f);
+        RectangleF rect = new RectangleF(0f, (Height - height) / 2f, Width, height);
         using var path = Squircle.Capsule(rect);
 
         Color fill = _checked ? CouiTheme.WithAlpha(Palette.Primary, 0x26) : Palette.Container8;
@@ -60,7 +60,7 @@ public class CouiChip : CouiControl
         else if (IsHovered) fill = _checked ? CouiTheme.WithAlpha(Palette.Primary, 0x33) : Palette.Container12;
 
         Fill(g, path, fill);
-        DrawFocusRing(g, path);
+        DrawFocusRing(g, rect, height / 2f);
 
         DrawText(g, Text, Font, _checked ? Palette.PrimaryText : Palette.LabelPrimary,
             new Rectangle(0, 0, Width, Height),

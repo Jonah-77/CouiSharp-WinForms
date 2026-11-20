@@ -50,7 +50,7 @@ public class CouiCard : CouiControl
 
     protected override void OnPaintContent(Graphics g)
     {
-        RectangleF rect = new RectangleF(0.5f, 0.5f, Width - 1f, Height - 1f);
+        RectangleF rect = new RectangleF(0f, 0f, Width, Height);
         using var path = Squircle.RoundedRect(rect, Dpf(_radius));
 
         Color fill = Palette.Card;
@@ -58,7 +58,7 @@ public class CouiCard : CouiControl
         else if (IsHovered && _clickable) fill = CouiTheme.Composite(Palette.Card, Palette.Hover);
 
         Fill(g, path, fill);
-        if (_showBorder) Stroke(g, path, Palette.Divider);
+        if (_showBorder) StrokeInset(g, rect, Dpf(_radius), Palette.Divider);
     }
 
     protected override void ApplyMetrics()

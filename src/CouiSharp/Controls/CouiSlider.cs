@@ -112,9 +112,9 @@ public class CouiSlider : CouiControl
 
         if (Focused)
         {
-            float ringSize = thumb + Dpf(6);
-            using var ring = Squircle.Circle(new RectangleF(x - ringSize / 2f, (Height - ringSize) / 2f, ringSize, ringSize));
-            Stroke(g, ring, Palette.FocusOutline, 2f);
+            float ringSize = Math.Min(thumb + Dpf(6), Math.Min(Width - 2f, Height - 2f));
+            RectangleF ring = new RectangleF(x - ringSize / 2f, (Height - ringSize) / 2f, ringSize, ringSize);
+            DrawFocusRing(g, ring, ringSize / 2f);
         }
     }
 

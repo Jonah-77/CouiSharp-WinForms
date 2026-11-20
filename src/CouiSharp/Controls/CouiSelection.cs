@@ -65,12 +65,12 @@ public class CouiCheckBox : CouiControl
             PointF b = new PointF(rect.Left + box * 0.43f, rect.Top + box * 0.72f);
             PointF c = new PointF(rect.Left + box * 0.77f, rect.Top + box * 0.30f);
             g.DrawLines(pen, new[] { a, b, c });
-            Stroke(g, path, Palette.Primary);
+            StrokeInset(g, rect, Dpf(4), Palette.Primary);
         }
         else
         {
             Fill(g, path, Palette.Container8);
-            Stroke(g, path, Palette.Divider);
+            StrokeInset(g, rect, Dpf(4), Palette.Divider);
         }
 
         int textLeft = (int)Math.Round(box + Dpf(8));

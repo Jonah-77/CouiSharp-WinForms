@@ -64,7 +64,9 @@ public class CouiButton : CouiControl
     protected override void OnPaintContent(Graphics g)
     {
         float height = Math.Min(Height, Dpf(CouiShape.ButtonHeight));
-        RectangleF rect = new RectangleF(0.5f, (Height - height) / 2f + 0.5f, Width - 1f, height - 1f);
+        // Bounds hug the client box exactly: a 0.5px offset used to leave a half-covered row
+        // along the top edge, which showed up as a translucent rim at non-100% scale factors.
+        RectangleF rect = new RectangleF(0f, (Height - height) / 2f, Width, height);
         using var path = Squircle.Capsule(rect);
 
         float radius = height / 2f;
@@ -118,9 +120,9 @@ public class CouiButton : CouiControl
         }
 
         if (fill.A > 0) Fill(g, path, fill);
-        if (border.A > 0) Stroke(g, path, border);
+        if (border.A > 0) StrokeInset(g, rect, radius, border);
 
-        DrawFocusRing(g, path);
+        DrawFocusRing(g, rect, radius);
 
         Rectangle textRect = new Rectangle(
             (int)Math.Round(radius),

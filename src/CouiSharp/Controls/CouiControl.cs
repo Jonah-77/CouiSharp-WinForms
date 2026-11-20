@@ -163,12 +163,34 @@ public abstract class CouiControl : Control
         Invalidate();
     }
 
-    /// <summary>Draws the primary-color focus ring used across COUI components.</summary>
-    protected void DrawFocusRing(Graphics g, GraphicsPath path)
+    /// <summary>
+    /// Draws the primary-color focus ring used across COUI components. The ring is inset by
+    /// half its own stroke so it stays completely inside the control: stroking straight on the
+    /// silhouette let the outer half of the pen fall past the client edge, which got clipped
+    /// into flat segments at the capsule's extreme left and right and read as a broken border.
+    /// </summary>
+    protected void DrawFocusRing(Graphics g, RectangleF bounds, float radius)
     {
         if (!Focused) return;
         float width = Dpf(CouiShape.FocusRing);
+        float inset = width / 2f + 0.5f;
+        RectangleF ring = RectangleF.Inflate(bounds, -inset, -inset);
+        if (ring.Width <= 1 || ring.Height <= 1) return;
+        using var path = Squircle.RoundedRect(ring, Math.Max(0f, radius - inset), Squircle.CircleControl);
         using var pen = new Pen(Palette.FocusOutline, width) { LineJoin = LineJoin.Round };
+        g.DrawPath(pen, path);
+    }
+
+    /// <summary>Strokes a shape's outline on an inward-offset path so the pen is never clipped.</summary>
+    protected void StrokeInset(Graphics g, RectangleF bounds, float radius, Color color, float dp = CouiShape.Stroke)
+    {
+        if (color.A == 0) return;
+        float width = Dpf(dp);
+        float inset = width / 2f + 0.5f;
+        RectangleF inner = RectangleF.Inflate(bounds, -inset, -inset);
+        if (inner.Width <= 1 || inner.Height <= 1) return;
+        using var path = Squircle.RoundedRect(inner, Math.Max(0f, radius - inset), Squircle.CircleControl);
+        using var pen = new Pen(color, width) { LineJoin = LineJoin.Round };
         g.DrawPath(pen, path);
     }
 

@@ -77,7 +77,7 @@ public class CouiSwitch : CouiControl
         using var thumbPath = Squircle.Circle(thumbRect);
         Fill(g, thumbPath, Enabled ? Palette.LabelOnColor : CouiTheme.WithAlpha(Palette.LabelOnColor, 0xB0));
 
-        DrawFocusRing(g, trackPath);
+        DrawFocusRing(g, track, height / 2f);
     }
 
     protected override void ApplyMetrics()
