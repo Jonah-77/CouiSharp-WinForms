@@ -56,7 +56,7 @@ public class CouiTextBox : CouiControl
         Controls.Add(_inner);
 
         Height = Dp(CouiShape.InputHeight);
-        Font = CouiTypography.Body();
+        SetThemeFont(CouiTypography.Body());
     }
 
     /// <summary>Hint shown while the value is empty. Painted through the inner TextBox's own
@@ -157,7 +157,9 @@ public class CouiTextBox : CouiControl
     {
         int pad = Dp(CouiShape.InputPadding);
         Height = Dp(CouiShape.InputHeight);
-        _inner.Font = CouiTypography.Body();
+        if (!HasHostFont) SetThemeFont(CouiTypography.Body());
+        // The hosted editor is a native TextBox: it cannot inherit the themed font on its own.
+        _inner.Font = Font;
         _inner.BackColor = FieldFill();
         _inner.ForeColor = _showingHint
             ? CouiTheme.Composite(FieldFill(), Palette.LabelTertiary)

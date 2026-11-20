@@ -111,8 +111,9 @@
   <header>
     <span class="eyebrow">WinForms · C#</span>
     <h1>CouiSharp</h1>
-    <p class="lede">按 ColorOS 17（COUI）的令牌做的一套 WinForms 控件库：12dp 超椭圆卡片、44dp 胶囊按钮、10dp 输入框、15sp 正文，明暗两套配色都取自原项目。</p>
+    <p class="lede">按 ColorOS 17（COUI）的令牌做的一套 WinForms 控件库：12dp 超椭圆卡片、44dp 胶囊按钮、10dp 输入框，全程序只用霞鹜文楷一套字族，图标全部自绘，另有一层 CPU 模糊玻璃。</p>
     <div class="meta">
+      <span class="chip"><strong>0.2.0</strong></span>
       <span class="chip"><strong>独立</strong> 于 MiuixSharp</span>
       <span class="chip">net8.0 / net6.0</span>
       <span class="chip">MIT</span>
@@ -150,9 +151,49 @@
           <tr><td>分隔线</td><td>12% 前景色</td><td>行间与卡片描边</td></tr>
           <tr><td>圆角</td><td>卡片 12dp、按钮胶囊、输入框 10dp</td><td>形状体系</td></tr>
           <tr><td>尺寸</td><td>按钮 44dp、开关 36×22、行高 48dp</td><td>组件度量</td></tr>
-          <tr><td>字体</td><td>正文 15sp、说明 13sp、标题 18/20sp</td><td>TextStyles.kt</td></tr>
+          <tr><td>字体</td><td>霞鹜文楷（可切霞鹜臻楷），正文 15sp、说明 13sp、标题 18/20sp</td><td>TextStyles.kt + OFL</td></tr>
         </tbody>
       </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>字体：全程序只有一个字族</h2>
+    <p class="sub">默认霞鹜文楷；在「字体」一行切到霞鹜臻楷即可整体加粗。CJK 字重是独立 family，所以按角色映射族名，而不是请求 Bold。</p>
+    <div class="grid3">
+      <div class="tile"><h3>霞鹜文楷</h3><p>默认字族，正文 Regular、标题与按钮 Medium 两个 family。</p></div>
+      <div class="tile"><h3>霞鹜臻楷</h3><p>可选加粗衍生，CouiTheme.FontFace 一个属性切换全局。</p></div>
+      <div class="tile"><h3>注册方式</h3><p>AddFontResourceEx(FR_PRIVATE)：TextRenderer 走 GDI，私藏字体集合会被静默忽略。</p></div>
+      <div class="tile"><h3>回退</h3><p>未装霞鹜时回退 Microsoft YaHei UI，绝不落到随机系统字体。</p></div>
+      <div class="tile"><h3>宿主字体</h3><p>控件记住宿主显式设过的字体，换字族或改密度时不会把它覆盖掉。</p></div>
+      <div class="tile"><h3>体积</h3><p>两个 .ttf 约 66 MB，不进仓库，随发布包附带。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>图标：20 个全部自绘</h2>
+    <p class="sub">24dp 画布、1.5dp 圆头描边、2dp 安全边距，GraphicsPath 直接写在代码里，任意 DPI 清晰、颜色随主题。</p>
+    <figure class="shot">
+      <img src="screenshots/icons.png" alt="自绘图标一览">
+      <figcaption>Search  Close  Add  Minus  More  Chevron×4  ArrowBack  Check  Delete  Edit  Settings  Info  Warning  Refresh  Download  Copy  Share</figcaption>
+    </figure>
+    <div class="grid3">
+      <div class="tile"><h3>CouiIcon</h3><p>Kind / IconSize / Tint 三个属性，默认跟随主题前景色。</p></div>
+      <div class="tile"><h3>不占底色</h3><p>FillsBackdrop = false：图标落在玻璃上不会带出一块页面颜色的方块。</p></div>
+      <div class="tile"><h3>为什么自己画</h3><p>COUI 图标是从 ColorOS 系统包描出来的，授权不清；自绘既干净又能按需加。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>玻璃：B 方案，模糊的是库自己画的页面</h2>
+    <p class="sub">WinForms 读不回自绘控件的像素（DrawToBitmap 是空图，PrintWindow 与真实帧不一致），所以玻璃改为重画控件树 + CPU 盒式模糊。</p>
+    <div class="grid3">
+      <div class="tile"><h3>能做</h3><p>透出库自己画的卡片、按钮、文字，悬浮条 / 面板 / 弹层都能用。</p></div>
+      <div class="tile"><h3>做不到</h3><p>桌面壁纸、窗口阴影、别的程序的像素不会透出来；那是合成器的事，需要 Direct2D / Composition。</p></div>
+      <div class="tile"><h3>成本</h3><p>降采样 + 三次盒式模糊，工具条大小几毫秒；页面变了显式 Refresh 一次。</p></div>
+      <div class="tile"><h3>CouiGlassPanel</h3><p>Radius / BlurStrength / TintStrength 三个属性，暗色自动加一档白洗，避免在纯黑页上塌成一个洞。</p></div>
+      <div class="tile"><h3>演示</h3><p>页面底部那条浮动工具条就是它，左侧能看见被模糊的「保存」按钮。</p></div>
+      <div class="tile"><h3>不抢像素</h3><p>采样时跳过玻璃自身，面板永远不会把自己的旧帧当背景。</p></div>
     </div>
   </section>
 
@@ -200,7 +241,8 @@ card.Controls.AddRange(new Control[] { title, toggle, save });</pre>
           <tr><th>圆角</th><td>不裁 Region：150% DPI 下会变成虚线边，改为按路径绘制。</td></tr>
           <tr><th>底色</th><td>自绘前先解析父级链路（含自定义 SurfaceColor），圆角外不会露出异物。</td></tr>
           <tr><th>文字</th><td>半透明令牌先与底色合成，再交给 TextRenderer，避免 GDI 把 26% 文字画成纯黑。</td></tr>
-          <tr><th>字体</th><td>点数本身随 DPI 走，只额外乘用户显示比例，避免 150% 下双重放大。</td></tr>
+          <tr><th>字体</th><td>点数本身随 DPI 走，只额外乘用户显示比例，避免 150% 下双重放大。字重按族名解析，不合成 Bold。</td></tr>
+          <tr><th>玻璃</th><td>重画控件树到离屏位图再模糊，跳过玻璃自身；不做桌面级背景模糊。</td></tr>
           <tr><th>度量</th><td>句柄创建、DPI 变化、主题变化、尺寸变化都会触发 ApplyMetrics 重算。</td></tr>
         </tbody>
       </table>
@@ -208,7 +250,7 @@ card.Controls.AddRange(new Control[] { title, toggle, save });</pre>
   </section>
 
   <footer>
-    <p>设计令牌来自 <a href="https://github.com/suqi8/coui">COUI</a>（Apache-2.0），本库以 MIT 发布，不复制其源码，只复用令牌与重定主题规范。与 OPPO / ColorOS 无隶属关系。</p>
+    <p>设计令牌来自 <a href="https://github.com/suqi8/coui">COUI</a>（Apache-2.0），字体为 <a href="https://github.com/lxgw/LxgwWenKai">霞鹜文楷</a> / <a href="https://github.com/lxgw/LxgwZhenKai">霞鹜臻楷</a>（SIL OFL 1.1），图标为本库自绘。本库以 MIT 发布，不复制 COUI 源码，只复用令牌与重定主题规范。与 OPPO / ColorOS 无隶属关系。</p>
   </footer>
 
 </div>

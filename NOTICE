@@ -14,5 +14,21 @@ No COUI source code is copied into this repository. What was reused is the desig
 specification. The C# implementation, control architecture, painting pipeline and demo are
 original work.
 
+Bundled typefaces
+-----------------
+The release package carries two fonts, both under the SIL Open Font License 1.1:
+
+    LXGW WenKai (霞鹜文楷)      https://github.com/lxgw/LxgwWenKai
+    LXGW ZhenKai GB (霞鹜臻楷)  https://github.com/lxgw/LxgwZhenKai
+
+They are redistributed unmodified, as the OFL permits, and are loaded at runtime with
+AddFontResourceEx in FR_PRIVATE mode (they are not installed system-wide). The fonts themselves
+are not committed to this repository.
+
+Icons
+-----
+The 20 outlines in src/CouiSharp/Drawing/CouiIconPaths.cs were drawn for this library. They are
+not traced from ColorOS system packages or copied from any icon pack.
+
 ColorOS is a trademark of OPPO. This project is not affiliated with, endorsed by or sponsored by
 OPPO or the COUI maintainers.

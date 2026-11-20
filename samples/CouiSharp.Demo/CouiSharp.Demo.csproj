@@ -15,4 +15,13 @@
     <ProjectReference Include="..\..\src\CouiSharp\CouiSharp.csproj" />
   </ItemGroup>
 
+  <!-- The 霞鹜 fonts are not committed (66 MB); when a clone has them under /fonts, copy them next
+       to the executable so the demo starts in 霞鹜文楷 instead of the system fallback. -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)..\..\fonts')">
+    <None Include="$(MSBuildThisFileDirectory)..\..\fonts\*.ttf"
+          Link="fonts\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          Visible="false" />
+  </ItemGroup>
+
 </Project>

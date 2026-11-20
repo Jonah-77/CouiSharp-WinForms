@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.2.0 — 2026-11-20
+
+Takes the three things the port had been missing: the typeface, the icon set and a glass layer.
+
+### New
+
+- **霞鹜文楷 is the app font.** `CouiFonts` registers the bundled `.ttf` files with
+  `AddFontResourceEx(FR_PRIVATE | FR_NOT_ENUM)` and resolves faces by family name. `CouiTypography`
+  now maps roles to families: headers/titles/buttons use the `霞鹜文楷 Medium` family, body text the
+  regular one, because CJK releases ship weights as separate families rather than as `Bold` styles of
+  one family. Missing fonts fall back to `Microsoft YaHei UI`.
+- **`CouiTheme.FontFace`** switches the whole app between 霞鹜文楷 (default) and 霞鹜臻楷, the bolder
+  derivative. The demo exposes it as a "字族" row in a new 字体 card, and `--face=zhenkai` sets it
+  from the command line.
+- **`CouiIcon` + `CouiIconPaths`: 20 hand-drawn icons** — Search, Close, Add, Minus, More,
+  ChevronLeft/Right/Up/Down, ArrowBack, Check, Delete, Edit, Settings, Info, Warning, Refresh,
+  Download, Copy, Share. 24dp canvas, 1.5dp round-cap stroke, 2dp margin, `GraphicsPath` outlines
+  cached at canvas scale, so they are DPI-independent and follow the theme colour.
+- **`CouiGlassPanel` + `CouiGlass` (rendering plan B):** the panel re-renders the library's own
+  control tree into a bitmap, downscales it, box-blurs it on the CPU and clips the result to a
+  squircle. The demo carries a floating frosted bar that shows the page's buttons blurred behind
+  it. A dark-specific wash keeps the sheet visible over near-black page pixels.
+- **`CouiControl.FillsBackdrop`**: glyph controls can opt out of painting an opaque backdrop. Icons
+  use it, so they sit on glass without a rectangle of page colour behind them.
+
+### Fixed
+
+- **Icons were joined into polygons.** Consecutive `GraphicsPath.AddLine` calls continue the current
+  figure, so an "X" closed into a hexagon, a "+" gained a diagonal and every gear spoke turned into a
+  connecting fan. Each stroke now starts its own figure.
+
+### Note
+
+- Glass blurs only the library's paint tree. A wallpaper, a window shadow or another app's pixels
+  never show through: WinForms cannot read back rendered pixels of a self-painted control
+  (`DrawToBitmap` is blank, `PrintWindow` does not match the frame). Real desktop backdrop blur needs
+  a compositor and is not part of this release.
+
 ## 0.1.5 — 2026-11-20
 
 Aligns the state layers with COUI after its motion pass (`library: Bring motion and touch in line

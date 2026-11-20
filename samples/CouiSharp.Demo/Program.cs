@@ -17,8 +17,13 @@ internal static class Program
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
+        // Register the bundled 霞鹜 fonts before any window exists: GDI text rendering silently
+        // falls back to a system face when the family is not in the process font table.
+        RegisterBundledFonts();
+
         bool dark = false;
         Color accent = Color.FromArgb(0xFF, 0x00, 0x80, 0xFF);
+        CouiFontFace face = CouiFontFace.WenKai;
 
         foreach (string arg in args)
         {
@@ -36,6 +41,11 @@ internal static class Program
                     _ => accent
                 };
             }
+            if (arg.StartsWith("--face=", StringComparison.OrdinalIgnoreCase))
+            {
+                string name = arg.Substring("--face=".Length).Trim().ToLowerInvariant();
+                if (name is "zhenkai" or "zk") face = CouiFontFace.ZhenKai;
+            }
             if (arg.StartsWith("--dump-layout=", StringComparison.OrdinalIgnoreCase))
             {
                 LayoutDumpPath = arg.Substring("--dump-layout=".Length).Trim();
@@ -44,7 +54,25 @@ internal static class Program
 
         CouiTheme.Mode = dark ? CouiThemeMode.Dark : CouiThemeMode.Light;
         CouiTheme.SeedColor = accent;
+        CouiTheme.FontFace = face;
 
         Application.Run(new DemoForm());
+    }
+
+    /// <summary>
+    /// Loads fonts from a <c>fonts</c> folder next to the executable, falling back to a
+    /// <c>fonts</c> folder beside the sources (developers run straight from the repo without
+    /// copying 60 MB of typefaces into bin). Missing fonts are not fatal: the library falls back
+    /// to Microsoft YaHei UI.
+    /// </summary>
+    private static void RegisterBundledFonts()
+    {
+        string local = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts");
+        int count = CouiFonts.Register(local);
+        if (count > 0 || CouiFonts.IsAvailable(CouiFontFace.WenKai)) return;
+
+        string besideSources = System.IO.Path.GetFullPath(
+            System.IO.Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "fonts"));
+        CouiFonts.Register(besideSources);
     }
 }
