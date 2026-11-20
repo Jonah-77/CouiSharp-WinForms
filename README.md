@@ -59,44 +59,8 @@ Settings  Info  Warning  Refresh  Download  Copy  Share`
 
 Every icon uses a 24dp canvas, a 1.5dp stroke with round caps and a 2dp safety margin, so it stays
 crisp at any DPI and re-colours with the theme (`CouiIcon.Tint` overrides). Icons paint no backdrop
-(`FillsBackdrop = false`), so they can sit on a translucent surface without a rectangle of page
-colour behind them.
-
-## Window backdrop
-
-Frosted surfaces are **drawn by Windows, not by this library**. `CouiBackdropEffect` calls the two
-native entry points that do it:
-
-| Build | Path | Styles |
-| --- | --- | --- |
-| Windows 11 22H2+ (22621+) | `DwmSetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE)` | `Mica`, `Acrylic`, `Tabbed` |
-| Windows 10 1803+ (17134+) | `SetWindowCompositionAttribute` / accent policy | `Acrylic`, `None` |
-
-```csharp
-using CouiSharp.Drawing;
-
-var bar = new Form
-{
-    FormBorderStyle = FormBorderStyle.None,
-    ShowInTaskbar = false,
-    Owner = ownerForm,
-    BackColor = Color.FromArgb(0x20, 0x20, 0x20)
-};
-bar.Show();
-CouiBackdropEffect.Apply(bar, CouiBackdropStyle.Acrylic);   // false on unsupported builds
-CouiBackdropEffect.ApplyDarkMode(bar.Handle, CouiTheme.IsDark);
-```
-
-What the API takes care of: `DwmExtendFrameIntoClientArea` with all `-1` margins (without it the
-backdrop stops at the frame), the rounded corner preference (`DWMWCP_ROUND`, so no `Region` clip
-is needed), the `0xAABBGGRR` byte order of `GradientColor` in the legacy accent path, and a fallback
-from the DWM attribute to the accent policy when a driver rejects it. `Clear` restores a plain
-window.
-
-A WinForms window shows the backdrop only where it does not paint an opaque background, so the
-realistic target is a **small top-level surface**: a floating bar, a colour palette, a toast. The
-demo floats a borderless bar over the page with three `CouiIcon` children and nothing else; the
-system composes the blur, so it costs no paint time and follows the wallpaper and the OS theme.
+(`FillsBackdrop = false`), so a glyph never drags a rectangle of page colour across the card it sits
+on.
 
 
 ## Quick start
@@ -150,10 +114,10 @@ PerMonitorV2 aware.
 
 - Controls are **self-painted**, not native wrappers; a `CouiTextBox` hosts a borderless native
   `TextBox` but everything else is drawn by the library.
-- Frosted surfaces are **the system's**, not the library's: `CouiBackdropEffect` only works on a
-  top-level window (a `Form`), never on a control inside a page, and the tint follows the OS theme
-  rather than the library palette. Anything that needs per-control transparency still needs a
-  compositor (Direct2D / Composition), which is not part of this release.
+- **No frosted glass, by design.** Neither a CPU blur of the library's own paint tree nor a DWM
+  system backdrop ships here: GDI+ cannot sample the pixels behind a control, and a system backdrop
+  only works on a whole top-level window, never on a panel inside a page. Anything translucent
+  needs a compositor (Direct2D / Composition), which is out of scope.
 - No shader-based squircle, no metaball/ Lottie effects, no navigation stack — those are COUI
   modules that need effects WinForms cannot cheaply provide.
 - Icon set is the 20 hand-drawn outlines above; COUI's `coui-icons` pack is larger and is not

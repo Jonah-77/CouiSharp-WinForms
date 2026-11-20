@@ -111,9 +111,9 @@
   <header>
     <span class="eyebrow">WinForms · C#</span>
     <h1>CouiSharp</h1>
-    <p class="lede">按 ColorOS 17（COUI）的令牌做的一套 WinForms 控件库：12dp 超椭圆卡片、44dp 胶囊按钮、10dp 输入框；20 个图标全部自绘；浮动条的毛玻璃交给 Windows 合成器，不在托管代码里模糊像素。</p>
+    <p class="lede">按 ColorOS 17（COUI）的令牌做的一套 WinForms 控件库：12dp 超椭圆卡片、44dp 胶囊按钮、10dp 输入框；20 个图标全部自绘，透明度只靠底色合成，不做毛玻璃。</p>
     <div class="meta">
-      <span class="chip"><strong>0.2.1</strong></span>
+      <span class="chip"><strong>0.2.2</strong></span>
       <span class="chip"><strong>独立</strong> 于 MiuixSharp</span>
       <span class="chip">net8.0 / net6.0</span>
       <span class="chip">MIT</span>
@@ -166,24 +166,12 @@
     </figure>
     <div class="grid3">
       <div class="tile"><h3>CouiIcon</h3><p>Kind / IconSize / Tint 三个属性，默认跟随主题前景色。</p></div>
-      <div class="tile"><h3>不占底色</h3><p>FillsBackdrop = false：图标落在半透明窗口上不会带出一块页面颜色的方块。</p></div>
+      <div class="tile"><h3>不占底色</h3><p>FillsBackdrop = false：图标不会在自己脚下铺一块页面颜色的方块。</p></div>
       <div class="tile"><h3>为什么自己画</h3><p>COUI 图标是从 ColorOS 系统包描出来的，授权不清；自绘既干净又能按需加。</p></div>
     </div>
   </section>
 
   <section>
-    <h2>毛玻璃：用 Windows 自己的，不画像素</h2>
-    <p class="sub">CouiBackdropEffect 只调两个原生入口：Win11 22H2 起走 DWM 的系统背板类型，更老的机器退回 SetWindowCompositionAttribute 的亚克力策略。模糊由合成器做，托管的绘制时间成本是零。</p>
-    <div class="grid3">
-      <div class="tile"><h3>Win11 22H2+</h3><p>DWMWA_SYSTEMBACKDROP_TYPE：Mica / Acrylic / Tabbed，就是「设置」和开始菜单用的那一套。</p></div>
-      <div class="tile"><h3>Win10 1803+</h3><p>accent policy 的 ACCENT_ENABLE_ACRYLICBLURBEHIND；tint 的字节序是 0xAABBGGRR，和 GDI+ 反着。</p></div>
-      <div class="tile"><h3>替你处理掉的细节</h3><p>全 -1 的边框外延（否则背板止于边框）、圆角偏好（不再用 Region 裁）、驱动拒绝 DWM 属性时回退。</p></div>
-      <div class="tile"><h3>用在哪</h3><p>只有顶层窗口能透出来，所以是浮动条、调色盘、Toast 这类小表面，不是页面里的控件。</p></div>
-      <div class="tile"><h3>演示</h3><p>页面底部那条浮动条是一个无边框子窗口，里面只放三个 CouiIcon，模糊的「保存」按钮就在它左端。</p></div>
-      <div class="tile"><h3>顺手的事</h3><p>背板跟着壁纸和系统的深浅色走，ApplyDarkMode 把窗口的明暗意图交给 DWM。</p></div>
-    </div>
-  </section>
-
   <section>
     <h2>控件</h2>
     <p class="sub">全部自绘：先铺解析出的底色，再画超椭圆路径，不用 Region 裁圆角。</p>
@@ -229,7 +217,7 @@ card.Controls.AddRange(new Control[] { title, toggle, save });</pre>
           <tr><th>底色</th><td>自绘前先解析父级链路（含自定义 SurfaceColor），圆角外不会露出异物。</td></tr>
           <tr><th>文字</th><td>半透明令牌先与底色合成，再交给 TextRenderer，避免 GDI 把 26% 文字画成纯黑。</td></tr>
           <tr><th>字体</th><td>点数本身随 DPI 走，只额外乘用户显示比例，避免 150% 下双重放大。</td></tr>
-          <tr><th>毛玻璃</th><td>交给 Windows 合成器（DWM 系统背板 / 亚克力策略），托管代码不碰像素；只对顶层窗口有效。</td></tr>
+          <tr><th>毛玻璃</th><td>不做。CPU 模糊只能看到库自己画的像素，系统背板只给整个顶层窗口，两者都给不了页面内控件的透明底。</td></tr>
           <tr><th>度量</th><td>句柄创建、DPI 变化、主题变化、尺寸变化都会触发 ApplyMetrics 重算。</td></tr>
         </tbody>
       </table>
@@ -243,6 +231,7 @@ card.Controls.AddRange(new Control[] { title, toggle, save });</pre>
 </div>
 </body>
 </html>
+
 
 
 

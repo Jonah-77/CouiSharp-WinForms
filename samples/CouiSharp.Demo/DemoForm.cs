@@ -15,8 +15,6 @@ public sealed class DemoForm : Form
 {
     private readonly Panel _page;
     private readonly CouiLabel _status;
-    private Form _bar;
-    private CouiIcon[] _barIcons = Array.Empty<CouiIcon>();
     private float _builtDensity;
     private int _pageWidth = -1;
     private bool _rebuilding;
@@ -47,12 +45,6 @@ public sealed class DemoForm : Form
             Height = Px(24)
         };
 
-        // The floating bar is a separate borderless window whose backdrop is drawn by Windows
-        // (DWM system backdrop, or the acrylic accent policy on Windows 10). We never blur pixels
-        // ourselves: the bar only draws three glyphs on top of what the compositor puts behind it.
-        // It is created once the page has a position, so it never flashes at the wrong place.
-        _bar = null;
-
         CouiTheme.Changed += OnThemeChanged;
         // Rebuild only on a width change: the page also raises SizeChanged when a scrollbar appears
         // or disappears, and rebuilding on that reset the scroll position after a font switch.
@@ -71,7 +63,6 @@ public sealed class DemoForm : Form
     {
         BackColor = CouiTheme.Colors.BackgroundWithCard;
         _page.BackColor = CouiTheme.Colors.BackgroundWithCard;
-        if (_bar != null && !_bar.IsDisposed) CouiBackdropEffect.ApplyDarkMode(_bar.Handle, CouiTheme.IsDark);
         if (Math.Abs(_builtDensity - Density) > 0.01f)
         {
             // Never rebuild inside a control's own event: the scale slider raises ValueChanged
@@ -86,66 +77,7 @@ public sealed class DemoForm : Form
     protected override void OnShown(EventArgs e)
     {
         base.OnShown(e);
-        EnsureBar();
-        LayoutBar();
         Rebuild();
-    }
-
-    private void EnsureBar()
-    {
-        if (_bar != null || !CouiBackdropEffect.IsSupported) return;
-        _bar = new Form
-        {
-            FormBorderStyle = FormBorderStyle.None,
-            ShowInTaskbar = false,
-            StartPosition = FormStartPosition.Manual,
-            BackColor = Color.FromArgb(0x20, 0x20, 0x20),
-            Owner = this
-        };
-        _barIcons = new CouiIcon[]
-        {
-            new CouiIcon { Kind = CouiIconKind.Check },
-            new CouiIcon { Kind = CouiIconKind.Download },
-            new CouiIcon { Kind = CouiIconKind.Share }
-        };
-        foreach (CouiIcon icon in _barIcons) _bar.Controls.Add(icon);
-        _bar.Show();
-        CouiBackdropEffect.Apply(_bar, CouiBackdropStyle.Acrylic);
-        CouiBackdropEffect.ApplyDarkMode(_bar.Handle, CouiTheme.IsDark);
-    }
-
-    protected override void OnResize(EventArgs e)
-    {
-        base.OnResize(e);
-        LayoutBar();
-    }
-
-    protected override void OnMove(EventArgs e)
-    {
-        base.OnMove(e);
-        // The bar is its own window, so it has to be carried along when the page moves.
-        LayoutBar();
-    }
-
-    /// <summary>Places the floating acrylic bar and its icons in dp units.</summary>
-    private void LayoutBar()
-    {
-        if (_bar is null || _bar.IsDisposed) return;
-        int height = Px(68);
-        int width = Math.Min(Px(280), Math.Max(Px(160), ClientSize.Width - Px(40)));
-        Point origin = PointToScreen(new Point(
-            (ClientSize.Width - width) / 2,
-            ClientSize.Height - height - Px(20)));
-        _bar.Bounds = new Rectangle(origin, new Size(width, height));
-        int iconSize = Px(24);
-        int spacing = width / 3;
-        for (int i = 0; i < _barIcons.Length; i++)
-        {
-            _barIcons[i].IconSize = 24f;
-            _barIcons[i].Size = new Size(iconSize, iconSize);
-            _barIcons[i].Location = new Point(spacing * i + (spacing - iconSize) / 2,
-                                            (height - iconSize) / 2);
-        }
     }
 
     protected override void OnDpiChanged(DpiChangedEventArgs e)
@@ -218,7 +150,6 @@ public sealed class DemoForm : Form
             _pendingLayout = false;
         }
 
-        LayoutBar();
         DumpLayout();
     }
 
@@ -521,7 +452,7 @@ public sealed class DemoForm : Form
             Variant = CouiButtonVariant.Text,
             Bounds = new Rectangle(Px(236), buttonY, Px(148), Px(CouiShape.ButtonHeight))
         };
-        text.Click += (_, _) => _status.Text = "CouiSharp 0.2.1";
+        text.Click += (_, _) => _status.Text = "CouiSharp 0.2.2";
         card.Controls.Add(text);
 
         return y;
@@ -563,8 +494,8 @@ public sealed class DemoForm : Form
 
         var lines = new[]
         {
-            "CouiSharp 0.2.1 · ColorOS 17 视觉令牌",
-            "20 个自绘图标 · 系统原生毛玻璃",
+            "CouiSharp 0.2.2 · ColorOS 17 视觉令牌",
+            "20 个自绘图标 · 纯 GDI+ 自绘",
             "与 MiuixSharp 相互独立"
         };
 
@@ -584,15 +515,12 @@ public sealed class DemoForm : Form
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            CouiTheme.Changed -= OnThemeChanged;
-            // An owned window is not disposed with its owner.
-            _bar?.Dispose();
-        }
+        if (disposing) CouiTheme.Changed -= OnThemeChanged;
         base.Dispose(disposing);
     }
 }
+
+
 
 
 

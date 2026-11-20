@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.2 — 2026-11-20
+
+Drops frosted glass entirely. Neither of the two attempts survives: the CPU blur could only see the
+library's own paint tree, and the Windows backdrop only works on a whole top-level window, so
+neither of them could give a control inside a page a translucent surface. The library is now plain
+GDI+ self-painting, with no translation layer of any kind.
+
+### Removed
+
+- **`CouiBackdropEffect` + `CouiBackdropStyle`** — the DWM system-backdrop and acrylic accent-policy
+  wrapper added in 0.2.1, together with its frame-margin, corner-preference, byte-order and
+  fallback handling.
+- **The demo's floating bar**, which existed only to show a backdrop: the borderless child window,
+  its three icons, and the move/resize/dark-mode plumbing that carried it.
+
+### Note
+
+- `CouiControl.FillsBackdrop` stays. It is not about glass: glyph controls opt out of an opaque
+  backdrop so an icon never paints a rectangle of page colour over the card it sits on.
+
 ## 0.2.1 — 2026-11-20
 
 Drops both optional layers that shipped in 0.2.0 (the bundled typefaces and the CPU-blurred glass
