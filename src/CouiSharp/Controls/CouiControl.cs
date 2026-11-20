@@ -169,27 +169,37 @@ public abstract class CouiControl : Control
     /// silhouette let the outer half of the pen fall past the client edge, which got clipped
     /// into flat segments at the capsule's extreme left and right and read as a broken border.
     /// </summary>
-    protected void DrawFocusRing(Graphics g, RectangleF bounds, float radius)
+    protected void DrawFocusRing(Graphics g, RectangleF bounds, float radius,
+                                 float control = Squircle.CircleControl)
     {
         if (!Focused) return;
         float width = Dpf(CouiShape.FocusRing);
         float inset = width / 2f + 0.5f;
         RectangleF ring = RectangleF.Inflate(bounds, -inset, -inset);
         if (ring.Width <= 1 || ring.Height <= 1) return;
-        using var path = Squircle.RoundedRect(ring, Math.Max(0f, radius - inset), Squircle.CircleControl);
+        using var path = Squircle.RoundedRect(ring, Math.Max(0f, radius - inset), control);
         using var pen = new Pen(Palette.FocusOutline, width) { LineJoin = LineJoin.Round };
         g.DrawPath(pen, path);
     }
 
-    /// <summary>Strokes a shape's outline on an inward-offset path so the pen is never clipped.</summary>
-    protected void StrokeInset(Graphics g, RectangleF bounds, float radius, Color color, float dp = CouiShape.Stroke)
+    /// <summary>
+    /// Strokes a shape's outline on an inward-offset path so the pen is never clipped. Pass the
+    /// same corner <paramref name="control"/> factor the fill used: stroking a 0.68 squircle with
+    /// a 0.5523 arc does not follow the fill's curve, and the mismatch leaves square remnants at
+    /// the corners.
+    /// </summary>
+    protected void StrokeInset(Graphics g, RectangleF bounds, float radius, Color color,
+                               float dp = CouiShape.Stroke, float control = Squircle.CouiControl)
     {
         if (color.A == 0) return;
         float width = Dpf(dp);
-        float inset = width / 2f + 0.5f;
+        // Half the pen width, no extra gap: the stroke's outer edge then lands exactly on the fill's
+        // outline. Leaving a gap showed the fill colour as a lighter band outside the hairline,
+        // which read as a second border.
+        float inset = width / 2f;
         RectangleF inner = RectangleF.Inflate(bounds, -inset, -inset);
         if (inner.Width <= 1 || inner.Height <= 1) return;
-        using var path = Squircle.RoundedRect(inner, Math.Max(0f, radius - inset), Squircle.CircleControl);
+        using var path = Squircle.RoundedRect(inner, Math.Max(0f, radius - inset), control);
         using var pen = new Pen(color, width) { LineJoin = LineJoin.Round };
         g.DrawPath(pen, path);
     }

@@ -120,7 +120,7 @@ public class CouiButton : CouiControl
         }
 
         if (fill.A > 0) Fill(g, path, fill);
-        if (border.A > 0) StrokeInset(g, rect, radius, border);
+        if (border.A > 0) StrokeInset(g, rect, radius, border, CouiShape.Stroke, Squircle.CircleControl);
 
         DrawFocusRing(g, rect, radius);
 

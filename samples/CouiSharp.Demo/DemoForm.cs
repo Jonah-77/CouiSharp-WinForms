@@ -193,12 +193,17 @@ public sealed class DemoForm : Form
 
     private CouiLabel RowText(CouiCard card, string text, int row, int width)
     {
+        // Never let a label grow past its own text. A label added before a chip or a slider sits
+        // above it in z-order, so an over-wide label paints card colour over the neighbour and
+        // clips its left cap, which reads as a chopped-off edge.
+        Font font = CouiTypography.Body();
+        int measured = TextRenderer.MeasureText(text, font).Width + Px(8);
         var label = new CouiLabel
         {
             Text = text,
-            Font = CouiTypography.Body(),
+            Font = font,
             Bounds = new Rectangle(Px(16), Px(44) + Px(CouiShape.RowHeight) * row,
-                                   width, Px(CouiShape.RowHeight))
+                                   Math.Min(width, measured), Px(CouiShape.RowHeight))
         };
         card.Controls.Add(label);
         return label;

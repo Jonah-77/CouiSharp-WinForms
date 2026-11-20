@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.3 — 2026-11-20
+
+### Fixed
+
+- **Chips lost the left cap of their capsule.** The demo placed a `CouiLabel` of a fixed width in
+  front of the chip row; the label ended nine pixels inside the first chip, and because it was
+  added before the chips it sat above them and clipped that strip, leaving a flat vertical edge
+  where a round cap should be. Row labels now size themselves to their own text, so they stop
+  short of the next column. The same overlap was trimming the left end of the display-size slider.
+- **Outlined fields showed square remnants at their rounded corners.** The fill was a 0.68
+  squircle while the inset hairline was built with the 0.5523 circle factor, so the two curves
+  diverged at every corner and left an L-shaped ghost. `StrokeInset`/`DrawFocusRing` now take the
+  corner factor of the shape they trace, and the inset no longer leaves a gap that showed the fill
+  as a lighter band outside the line.
+
 ## 0.1.2 — 2026-11-20
 
 Edge pass: buttons were clicked, hovered and focused at a 150% scale factor and the resulting
