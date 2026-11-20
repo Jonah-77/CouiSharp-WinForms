@@ -102,7 +102,8 @@ public abstract class CouiControl : Control
 
     private void OnDpiChangedAfterParent(object sender, EventArgs e)
     {
-        Font = CouiTypography.Body();
+        // Do not touch Font here: a host may have assigned a heading or caption font, and resetting
+        // it to Body on a DPI/theme change shrank every label to body size.
         ApplyMetrics();
         Invalidate();
     }
@@ -110,7 +111,6 @@ public abstract class CouiControl : Control
     private void OnThemeChanged(object sender, EventArgs e)
     {
         if (!IsHandleCreated) return;
-        Font = CouiTypography.Body();
         ApplyMetrics();
         Invalidate();
     }

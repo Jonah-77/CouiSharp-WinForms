@@ -99,7 +99,6 @@ public class CouiProgressBar : CouiControl
 
     protected override void ApplyMetrics()
     {
-        if (Height > Dp(8)) Height = Dp(4);
         base.ApplyMetrics();
     }
 

@@ -8,6 +8,8 @@ namespace CouiSharp.Demo;
 
 internal static class Program
 {
+    internal static string LayoutDumpPath = string.Empty;
+
     [STAThread]
     private static void Main(string[] args)
     {
@@ -33,6 +35,10 @@ internal static class Program
                     "teal" => Color.FromArgb(0xFF, 0x00, 0xB3, 0xA8),
                     _ => accent
                 };
+            }
+            if (arg.StartsWith("--dump-layout=", StringComparison.OrdinalIgnoreCase))
+            {
+                LayoutDumpPath = arg.Substring("--dump-layout=".Length).Trim();
             }
         }
 

@@ -42,7 +42,6 @@ public class CouiSwitch : CouiControl
 
     protected virtual void OnCheckedChanged(EventArgs e)
     {
-        AccessibleName = AccessibleName;
         CheckedChanged?.Invoke(this, e);
     }
 

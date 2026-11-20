@@ -87,31 +87,13 @@ public static class CouiTheme
     private static CouiColors LightColors()
     {
         if (_seed.ToArgb() == Color.FromArgb(0xFF, 0x00, 0x80, 0xFF).ToArgb()) return CouiColors.Light();
-        return new CouiColors
-        {
-            Primary = _seed,
-            PrimaryText = _seed,
-            ContainerTheme = _seed,
-            Secondary = WithAlpha(_seed, 0x26),
-            ContainerThemeHalftone = WithAlpha(_seed, 0x26),
-            FocusOutline = WithAlpha(_seed, 0x66),
-        };
+        return CouiColors.Light().WithAccent(_seed, dark: false);
     }
 
     private static CouiColors DarkColors()
     {
-        var d = CouiColors.Dark();
-        if (_seed.ToArgb() == Color.FromArgb(0xFF, 0x00, 0x80, 0xFF).ToArgb()) return d;
-        Color lifted = Mix(_seed, Color.White, 0.25f);
-        return new CouiColors
-        {
-            Primary = lifted,
-            PrimaryText = Mix(_seed, Color.White, 0.45f),
-            ContainerTheme = lifted,
-            Secondary = WithAlpha(lifted, 0x40),
-            ContainerThemeHalftone = WithAlpha(lifted, 0x40),
-            FocusOutline = WithAlpha(Mix(_seed, Color.White, 0.45f), 0x66),
-        };
+        if (_seed.ToArgb() == Color.FromArgb(0xFF, 0x00, 0x80, 0xFF).ToArgb()) return CouiColors.Dark();
+        return CouiColors.Dark().WithAccent(_seed, dark: true);
     }
 
     /// <summary>Device-pixel ratio for a control: monitor DPI x user scale.</summary>

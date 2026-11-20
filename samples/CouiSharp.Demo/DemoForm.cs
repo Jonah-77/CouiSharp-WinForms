@@ -16,6 +16,7 @@ public sealed class DemoForm : Form
     private readonly CouiLabel _status;
     private float _builtDensity;
     private bool _rebuilding;
+    private bool _pendingLayout;
 
     public DemoForm()
     {
@@ -52,7 +53,12 @@ public sealed class DemoForm : Form
     {
         BackColor = CouiTheme.Colors.BackgroundWithCard;
         _page.BackColor = CouiTheme.Colors.BackgroundWithCard;
-        if (Math.Abs(_builtDensity - Density) > 0.01f) Rebuild();
+        if (Math.Abs(_builtDensity - Density) > 0.01f)
+        {
+            // Never rebuild inside a control's own event: the scale slider raises ValueChanged
+            // while dragging, and disposing it there killed the drag (and its status label).
+            _pendingLayout = true;
+        }
         Invalidate(true);
     }
 
@@ -74,6 +80,7 @@ public sealed class DemoForm : Form
     {
         foreach (Control child in _page.Controls)
         {
+            if (ReferenceEquals(child, _status)) continue;
             child.Dispose();
         }
         _page.Controls.Clear();
@@ -86,6 +93,16 @@ public sealed class DemoForm : Form
         _page.SuspendLayout();
         try
         {
+            // "Display size" grows the whole window in dp, otherwise the fixed window would keep
+            // the old pixel width while every control grew and the chip rows overflowed the cards.
+            if (Math.Abs(_builtDensity - Density) > 0.01f && IsHandleCreated)
+            {
+                Rectangle area = Screen.FromControl(this).WorkingArea;
+                int targetWidth = Math.Min(Px(468), (int)(area.Width * 0.92));
+                int targetHeight = Math.Min(Px(900), (int)(area.Height * 0.92));
+                ClientSize = new Size(targetWidth, targetHeight);
+            }
+
             ClearPage();
             _builtDensity = Density;
 
@@ -119,6 +136,39 @@ public sealed class DemoForm : Form
         {
             _page.ResumeLayout(true);
             _rebuilding = false;
+            _pendingLayout = false;
+        }
+        DumpLayout();
+    }
+
+    /// <summary>Writes every control's screen rectangle, for scripted click checks.</summary>
+    private void DumpLayout()
+    {
+        string path = Program.LayoutDumpPath;
+        if (string.IsNullOrEmpty(path)) return;
+        var builder = new System.Text.StringBuilder();
+        foreach (Control control in Enumerate(_page))
+        {
+            Point origin = control.PointToScreen(Point.Empty);
+            string text = (control.Text ?? string.Empty).Replace("|", "/");
+            builder.AppendLine($"{control.GetType().Name}|{text}|{origin.X}|{origin.Y}|{control.Width}|{control.Height}");
+        }
+        try
+        {
+            System.IO.File.WriteAllText(path, builder.ToString(), new System.Text.UTF8Encoding(false));
+        }
+        catch
+        {
+            // Layout dumping is a test aid; never let it break the demo.
+        }
+    }
+
+    private static System.Collections.Generic.IEnumerable<Control> Enumerate(Control parent)
+    {
+        foreach (Control child in parent.Controls)
+        {
+            yield return child;
+            foreach (Control nested in Enumerate(child)) yield return nested;
         }
     }
 
@@ -169,6 +219,18 @@ public sealed class DemoForm : Form
         return toggle;
     }
 
+    private bool _syncChips;
+
+    private void SelectOnly(CouiCard card, CouiChip selected)
+    {
+        _syncChips = true;
+        foreach (Control child in card.Controls)
+        {
+            if (child is CouiChip other && other != selected && other.Checked) other.Checked = false;
+        }
+        _syncChips = false;
+    }
+
     private int BuildAppearance(int left, int y, int width)
     {
         int height = Px(44) + Px(CouiShape.RowHeight) * 3 + Px(8);
@@ -205,7 +267,9 @@ public sealed class DemoForm : Form
             chip.Location = new Point(chipX, chipY);
             chip.CheckedChanged += (_, _) =>
             {
+                if (_syncChips) return;
                 if (!chip.Checked) { chip.Checked = true; return; }
+                SelectOnly(card, chip);
                 CouiTheme.SeedColor = color;
                 _status.Text = $"主题色：{name}";
             };
@@ -228,6 +292,9 @@ public sealed class DemoForm : Form
             CouiTheme.Scale = scale.Value / 100f;
             _status.Text = $"界面大小：{scale.Value}%";
         };
+        // Apply the pending relayout only after the drag ends, so the slider is not disposed
+        // underneath its own mouse capture.
+        scale.MouseUp += (_, _) => { if (_pendingLayout) Rebuild(); };
         card.Controls.Add(scale);
         return y;
     }
@@ -292,9 +359,12 @@ public sealed class DemoForm : Form
         int chipX = Px(16);
         for (int i = 0; i < chipNames.Length; i++)
         {
+            // Capture the name, not the loop counter: the handler runs after the loop has ended,
+            // so referencing i there reads chipNames[chipNames.Length] and throws.
+            string chipName = chipNames[i];
             var chip = new CouiChip
             {
-                Text = chipNames[i],
+                Text = chipName,
                 Font = CouiTypography.BodySmall(),
                 Checked = i == 0
             };
@@ -302,10 +372,10 @@ public sealed class DemoForm : Form
             chip.Location = new Point(chipX, chipY);
             chip.CheckedChanged += (_, _) =>
             {
-                foreach (Control sibling in card.Controls)
-                {
-                    if (sibling is CouiChip other && other != chip && other.Text != chipNames[0]) other.Checked = false;
-                }
+                if (_syncChips) return;
+                if (!chip.Checked) { chip.Checked = true; return; }
+                SelectOnly(card, chip);
+                _status.Text = "筛选：" + chipName;
             };
             card.Controls.Add(chip);
             chipX += chip.Width + Px(8);
@@ -365,7 +435,7 @@ public sealed class DemoForm : Form
             Variant = CouiButtonVariant.Text,
             Bounds = new Rectangle(Px(236), buttonY, Px(148), Px(CouiShape.ButtonHeight))
         };
-        text.Click += (_, _) => _status.Text = "CouiSharp 0.1.0";
+        text.Click += (_, _) => _status.Text = "CouiSharp 0.1.1";
         card.Controls.Add(text);
 
         return y;
@@ -378,7 +448,7 @@ public sealed class DemoForm : Form
 
         var lines = new[]
         {
-            "CouiSharp 0.1.0 · ColorOS 17 视觉令牌",
+            "CouiSharp 0.1.1 · ColorOS 17 视觉令牌",
             "12dp 卡片 / 44dp 胶囊按钮 / 10dp 输入框",
             "与 MiuixSharp 相互独立的另一个库"
         };

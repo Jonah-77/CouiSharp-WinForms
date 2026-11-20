@@ -7,7 +7,7 @@ namespace CouiSharp.Theme;
 /// <c>coui-ui/theme/Colors.kt</c>; where COUI only defines an alpha layer we keep the alpha so
 /// the control composites over whatever surface it sits on.
 /// </summary>
-public sealed class CouiColors
+public sealed record CouiColors
 {
     // ---- accent -------------------------------------------------------------
     public Color Primary { get; init; } = Color.FromArgb(0xFF, 0x00, 0x80, 0xFF);
@@ -54,6 +54,27 @@ public sealed class CouiColors
 
     /// <summary>COUI light scheme (<c>coui_color_*</c>, non-night resources).</summary>
     public static CouiColors Light() => new();
+
+    /// <summary>
+    /// Returns the same scheme with a different accent seed. Every non-accent token is copied —
+    /// building a partial instance silently fell back to the light defaults, which turned the page
+    /// white when an accent was picked while the dark theme was active.
+    /// </summary>
+    public CouiColors WithAccent(Color seed, bool dark)
+    {
+        Color primary = dark ? CouiTheme.Mix(seed, Color.White, 0.25f) : seed;
+        Color primaryText = dark ? CouiTheme.Mix(seed, Color.White, 0.45f) : seed;
+        int halftoneAlpha = dark ? 0x40 : 0x26;
+        return this with
+        {
+            Primary = primary,
+            PrimaryText = primaryText,
+            ContainerTheme = primary,
+            Secondary = CouiTheme.WithAlpha(primary, halftoneAlpha),
+            ContainerThemeHalftone = CouiTheme.WithAlpha(primary, halftoneAlpha),
+            FocusOutline = CouiTheme.WithAlpha(primaryText, 0x66)
+        };
+    }
 
     /// <summary>COUI dark scheme (<c>values-night</c> resources).</summary>
     public static CouiColors Dark() => new()
