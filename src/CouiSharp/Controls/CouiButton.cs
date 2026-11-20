@@ -109,14 +109,14 @@ public class CouiButton : CouiControl
         {
             fill = _variant == CouiButtonVariant.Text
                 ? Palette.Press
-                : CouiTheme.Composite(fill, CouiTheme.IsDark ? Palette.Press : Color.FromArgb(0x1F, 0, 0, 0));
+                : CouiTheme.Composite(fill, Palette.Press);
             if (_variant == CouiButtonVariant.Tonal) fill = CouiTheme.WithAlpha(Accent, 0x3D);
         }
         else if (IsHovered)
         {
             if (_variant == CouiButtonVariant.Text) fill = Palette.Container8;
             else if (_variant == CouiButtonVariant.Tonal) fill = CouiTheme.WithAlpha(Accent, 0x33);
-            else fill = CouiTheme.Composite(fill, CouiTheme.IsDark ? Palette.Hover : Color.FromArgb(0x14, 0, 0, 0));
+            else fill = CouiTheme.Composite(fill, Palette.Hover);
         }
 
         if (fill.A > 0) Fill(g, path, fill);

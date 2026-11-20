@@ -57,8 +57,8 @@ public class CouiSwitch : CouiControl
 
         Color trackColor = _checked ? Palette.Primary : Palette.Container16;
         if (!Enabled) trackColor = CouiTheme.WithAlpha(trackColor, 0x66);
-        else if (IsPressed || _keyPressed) trackColor = CouiTheme.Composite(trackColor, CouiTheme.IsDark ? Palette.Press : Palette.Hover);
-        else if (IsHovered) trackColor = CouiTheme.Composite(trackColor, CouiTheme.IsDark ? Palette.Hover : Color.FromArgb(0x14, 0, 0, 0));
+        else if (IsPressed || _keyPressed) trackColor = CouiTheme.Composite(trackColor, Palette.Press);
+        else if (IsHovered) trackColor = CouiTheme.Composite(trackColor, Palette.Hover);
 
         Fill(g, trackPath, trackColor);
 

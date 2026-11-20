@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.1.5 — 2026-11-20
+
+Aligns the state layers with COUI after its motion pass (`library: Bring motion and touch in line
+with COUI 17`).
+
+### Fixed
+
+- **Press and hover were a shade too light.** `Press` held `#14000000` and `Hover` `#0A000000`, which
+  are COUI's `pressBackground` slot and a dimmer hover; the components paint the `press` and `hover`
+  tokens instead — `#1F000000` and `#14000000` in light, `#33FFFFFF` and `#26FFFFFF` in dark.
+  `CouiButton` and `CouiSwitch` had been papering over it with inline literals; both now read the
+  palette, so a pressed button, switch or chip darkens by the same amount as COUI's.
+- **A pressed card in the dark theme was too dark.** `CardPressed` was `#2C2C2C`. COUI presses a card
+  to the `#33FFFFFF` layer, which replaces the fill and composites over the page, so the flattened
+  value is `#333333`.
+
+### New
+
+- `CouiColors.Focus`, COUI's `couiColorFocus` (`#1F0080FF` in light, `#331A8CFF` in dark). It follows
+  the accent seed like the other accent slots. The controls here still draw focus as a ring, so the
+  token is for host apps that paint list rows.
+
+### Note
+
+- COUI's other motion changes are out of reach of WinForms chrome: spring state layers, the
+  glass thumb, glitter gradients, haptics and page transitions have no GDI counterpart. The icon
+  rewrite in the same upstream pass is not part of this port.
+
 ## 0.1.4 — 2026-11-20
 
 ### Fixed

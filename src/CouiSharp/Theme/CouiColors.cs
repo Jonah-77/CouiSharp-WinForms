@@ -22,6 +22,12 @@ public sealed record CouiColors
     public Color Background { get; init; } = Color.White;
     public Color BackgroundWithCard { get; init; } = Color.FromArgb(0xFF, 0xF0, 0xF1, 0xF2);
     public Color Card { get; init; } = Color.White;
+    /// <summary>
+    /// Pressed card surface. COUI's dark value is an alpha layer (<c>#33FFFFFF</c>) that replaces the
+    /// card fill and composites over the page, so it is flattened here against the black page
+    /// rather than against the card colour: <c>#1E1E1E</c> pressing to <c>#333333</c>, the same as
+    /// upstream, not <c>#4B4B4B</c>.
+    /// </summary>
     public Color CardPressed { get; init; } = Color.FromArgb(0xFF, 0xE6, 0xE6, 0xE6);
     public Color Surface { get; init; } = Color.White;
     public Color SurfaceTop { get; init; } = Color.White;
@@ -38,8 +44,15 @@ public sealed record CouiColors
     public Color Container12 { get; init; } = Color.FromArgb(0x1F, 0, 0, 0);
     public Color Container16 { get; init; } = Color.FromArgb(0x29, 0, 0, 0);
     public Color Divider { get; init; } = Color.FromArgb(0x1F, 0, 0, 0);
-    public Color Press { get; init; } = Color.FromArgb(0x14, 0, 0, 0);
-    public Color Hover { get; init; } = Color.FromArgb(0x0A, 0, 0, 0);
+    public Color Press { get; init; } = Color.FromArgb(0x1F, 0, 0, 0);
+    public Color Hover { get; init; } = Color.FromArgb(0x14, 0, 0, 0);
+
+    /// <summary>
+    /// Focused / selected row layer (COUI <c>couiColorFocus</c>). Components that paint a row
+    /// selection use it over the row surface; the controls in this library still draw focus as a
+    /// ring, so the token is exposed for host apps that draw list rows themselves.
+    /// </summary>
+    public Color Focus { get; init; } = Color.FromArgb(0x1F, 0x00, 0x80, 0xFF);
     public Color Disabled { get; init; } = Color.FromArgb(0x42, 0, 0, 0);
     public Color Mask { get; init; } = Color.FromArgb(0x33, 0, 0, 0);
 
@@ -72,6 +85,7 @@ public sealed record CouiColors
             ContainerTheme = primary,
             Secondary = CouiTheme.WithAlpha(primary, halftoneAlpha),
             ContainerThemeHalftone = CouiTheme.WithAlpha(primary, halftoneAlpha),
+            Focus = CouiTheme.WithAlpha(primary, dark ? 0x33 : 0x1F),
             FocusOutline = CouiTheme.WithAlpha(primaryText, 0x66)
         };
     }
@@ -90,7 +104,7 @@ public sealed record CouiColors
         Background = Color.Black,
         BackgroundWithCard = Color.Black,
         Card = Color.FromArgb(0xFF, 0x1E, 0x1E, 0x1E),
-        CardPressed = Color.FromArgb(0xFF, 0x2C, 0x2C, 0x2C),
+        CardPressed = Color.FromArgb(0xFF, 0x33, 0x33, 0x33),
         Surface = Color.FromArgb(0xFF, 0x1E, 0x1E, 0x1E),
         SurfaceTop = Color.FromArgb(0xFF, 0x33, 0x33, 0x33),
         Bar = Color.FromArgb(0xFF, 0x14, 0x14, 0x14),
@@ -104,8 +118,9 @@ public sealed record CouiColors
         Container12 = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF),
         Container16 = Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF),
         Divider = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF),
-        Press = Color.FromArgb(0x1F, 0xFF, 0xFF, 0xFF),
-        Hover = Color.FromArgb(0x14, 0xFF, 0xFF, 0xFF),
+        Press = Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF),
+        Hover = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF),
+        Focus = Color.FromArgb(0x33, 0x1A, 0x8C, 0xFF),
         Disabled = Color.FromArgb(0x29, 0xFF, 0xFF, 0xFF),
         Mask = Color.FromArgb(0x66, 0, 0, 0),
 
