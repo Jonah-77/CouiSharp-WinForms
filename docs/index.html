@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CouiSharp — ColorOS 17 风格的 WinForms 控件库</title>
+<style>
+  :root {
+    --accent: #0080FF;
+    --page: #F0F1F2;
+    --card: #FFFFFF;
+    --text: rgba(0, 0, 0, .90);
+    --muted: rgba(0, 0, 0, .54);
+    --line: rgba(0, 0, 0, .12);
+    --tint: rgba(0, 128, 255, .15);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --accent: #1A8CFF;
+      --page: #000000;
+      --card: #1E1E1E;
+      --text: rgba(255, 255, 255, .90);
+      --muted: rgba(255, 255, 255, .54);
+      --line: rgba(255, 255, 255, .15);
+      --tint: rgba(26, 140, 255, .22);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text);
+    font-family: "Microsoft YaHei UI", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 56px 24px 80px; }
+  header .eyebrow {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--tint);
+    color: var(--accent);
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  h1 { font-size: 44px; line-height: 1.15; margin: 18px 0 10px; letter-spacing: -.02em; }
+  .lede { color: var(--muted); font-size: 17px; max-width: 640px; margin: 0 0 24px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 40px; }
+  .chip {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .chip strong { color: var(--text); font-weight: 600; }
+  section { margin-top: 48px; }
+  h2 { font-size: 18px; font-weight: 600; margin: 0 0 6px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .shot {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    padding: 12px;
+  }
+  .shot img { width: 100%; height: auto; display: block; border-radius: 8px; }
+  .shot figcaption { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    padding: 22px 24px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; font-size: 13px; color: var(--muted); }
+  td code, pre, .mono { font-family: "Cascadia Code", Consolas, "Courier New", monospace; }
+  td code { font-size: 12.5px; background: var(--tint); color: var(--accent); padding: 1px 6px; border-radius: 5px; }
+  pre {
+    margin: 0;
+    padding: 18px 20px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .tile h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+  .tile p { margin: 0; font-size: 13.5px; color: var(--muted); }
+  footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  @media (max-width: 560px) {
+    h1 { font-size: 34px; }
+    .wrap { padding: 40px 18px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow">WinForms · C#</span>
+    <h1>CouiSharp</h1>
+    <p class="lede">按 ColorOS 17（COUI）的令牌做的一套 WinForms 控件库：12dp 超椭圆卡片、44dp 胶囊按钮、10dp 输入框、15sp 正文，明暗两套配色都取自原项目。</p>
+    <div class="meta">
+      <span class="chip"><strong>独立</strong> 于 MiuixSharp</span>
+      <span class="chip">net8.0 / net6.0</span>
+      <span class="chip">MIT</span>
+      <span class="chip">PerMonitorV2</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>同一页，两套令牌</h2>
+    <p class="sub">截图来自 samples/CouiSharp.Demo，启动参数 --light / --dark 可复现。</p>
+    <div class="shots">
+      <figure class="shot">
+        <img src="screenshots/light.png" alt="浅色主题的设置页">
+        <figcaption>浅色：页面 #F0F1F2，卡片 #FFFFFF，强调色 #0080FF</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="screenshots/dark.png" alt="深色主题的设置页">
+        <figcaption>深色：页面 #000000，卡片 #1E1E1E，强调色 #1A8CFF</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>令牌表</h2>
+    <p class="sub">数值直接来自 COUI 的 Colors.kt 与重定主题规范，不是凭观感估的。</p>
+    <div class="card">
+      <table>
+        <thead>
+          <tr><th>类别</th><th>取值</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>强调色</td><td><code>#0080FF</code> / <code>#1A8CFF</code></td><td>主按钮、开关、滑杆、焦点环</td></tr>
+          <tr><td>页面 / 卡片</td><td><code>#F0F1F2</code> + <code>#FFFFFF</code></td><td>设置页底色与 12dp 卡片</td></tr>
+          <tr><td>文字层级</td><td>90% / 54% / 26%</td><td>主文案、次要说明、提示</td></tr>
+          <tr><td>分隔线</td><td>12% 前景色</td><td>行间与卡片描边</td></tr>
+          <tr><td>圆角</td><td>卡片 12dp、按钮胶囊、输入框 10dp</td><td>形状体系</td></tr>
+          <tr><td>尺寸</td><td>按钮 44dp、开关 36×22、行高 48dp</td><td>组件度量</td></tr>
+          <tr><td>字体</td><td>正文 15sp、说明 13sp、标题 18/20sp</td><td>TextStyles.kt</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>控件</h2>
+    <p class="sub">全部自绘：先铺解析出的底色，再画超椭圆路径，不用 Region 裁圆角。</p>
+    <div class="grid3">
+      <div class="tile"><h3>CouiCard</h3><p>12dp 卡片容器，可选描边与按压反馈。</p></div>
+      <div class="tile"><h3>CouiButton</h3><p>胶囊四态：Primary / Tonal / Text / Danger。</p></div>
+      <div class="tile"><h3>CouiSwitch</h3><p>36×22dp，18dp 拇指，空格与回车可切换。</p></div>
+      <div class="tile"><h3>CouiCheckBox</h3><p>18dp 方框，自绘对勾，整行可点。</p></div>
+      <div class="tile"><h3>CouiRadioButton</h3><p>18dp 圆环，GroupName 自动互斥。</p></div>
+      <div class="tile"><h3>CouiChip</h3><p>32dp 筛选标签，选中转 15% 强调色底。</p></div>
+      <div class="tile"><h3>CouiTextBox</h3><p>10dp 输入框，内嵌原生 TextBox 保 IME 与选区。</p></div>
+      <div class="tile"><h3>CouiSlider</h3><p>4dp 轨道，方向键 / Home / End 可调。</p></div>
+      <div class="tile"><h3>CouiProgressBar</h3><p>4dp 胶囊，确定与不确定两种模式。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>快速上手</h2>
+    <pre>CouiTheme.Mode = CouiThemeMode.Dark;
+CouiTheme.SeedColor = Color.FromArgb(0xFF, 0x00, 0xBD, 0x13);
+
+var card = new CouiCard { Bounds = new Rectangle(16, 16, 400, 160) };
+var title = new CouiLabel {
+    Text = "外观",
+    Font = CouiTypography.Header(),
+    Bounds = new Rectangle(16, 12, 360, 28)
+};
+var toggle = new CouiSwitch { Checked = true, Location = new Point(340, 60) };
+var save = new CouiButton {
+    Text = "保存",
+    Variant = CouiButtonVariant.Primary,
+    Location = new Point(16, 100)
+};
+card.Controls.AddRange(new Control[] { title, toggle, save });</pre>
+  </section>
+
+  <section>
+    <h2>工程约定</h2>
+    <div class="card">
+      <table>
+        <tbody>
+          <tr><th>圆角</th><td>不裁 Region：150% DPI 下会变成虚线边，改为按路径绘制。</td></tr>
+          <tr><th>底色</th><td>自绘前先解析父级链路（含自定义 SurfaceColor），圆角外不会露出异物。</td></tr>
+          <tr><th>文字</th><td>半透明令牌先与底色合成，再交给 TextRenderer，避免 GDI 把 26% 文字画成纯黑。</td></tr>
+          <tr><th>字体</th><td>点数本身随 DPI 走，只额外乘用户显示比例，避免 150% 下双重放大。</td></tr>
+          <tr><th>度量</th><td>句柄创建、DPI 变化、主题变化、尺寸变化都会触发 ApplyMetrics 重算。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>设计令牌来自 <a href="https://github.com/suqi8/coui">COUI</a>（Apache-2.0），本库以 MIT 发布，不复制其源码，只复用令牌与重定主题规范。与 OPPO / ColorOS 无隶属关系。</p>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+CouiSharp
+Copyright (c) 2026 CouiSharp contributors
+
+This product's visual design tokens (colors, type scale, corner radii and component metrics)
+are derived from COUI, a Compose Multiplatform ColorOS 17 theme:
+
+    COUI — https://github.com/suqi8/coui
+    Copyright the COUI contributors
+    Licensed under the Apache License, Version 2.0
+    https://www.apache.org/licenses/LICENSE-2.0
+
+No COUI source code is copied into this repository. What was reused is the design token table
+(color values, type sizes, radii and component dimensions) and the publicly documented re-theme
+specification. The C# implementation, control architecture, painting pipeline and demo are
+original work.
+
+ColorOS is a trademark of OPPO. This project is not affiliated with, endorsed by or sponsored by
+OPPO or the COUI maintainers.

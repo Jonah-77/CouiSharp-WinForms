@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B1D8E66E-1883-4AA0-AF9D-B38D678388F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CouiSharp", "src\CouiSharp\CouiSharp.csproj", "{5BCD2E4A-9FDA-4CFC-B241-6A45211454B2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A672E583-D44B-4F25-891B-143898CF0F29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CouiSharp.Demo", "samples\CouiSharp.Demo\CouiSharp.Demo.csproj", "{7D1B0B1D-F165-4DBD-BF43-9B71769360CA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5BCD2E4A-9FDA-4CFC-B241-6A45211454B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BCD2E4A-9FDA-4CFC-B241-6A45211454B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BCD2E4A-9FDA-4CFC-B241-6A45211454B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BCD2E4A-9FDA-4CFC-B241-6A45211454B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D1B0B1D-F165-4DBD-BF43-9B71769360CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D1B0B1D-F165-4DBD-BF43-9B71769360CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D1B0B1D-F165-4DBD-BF43-9B71769360CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D1B0B1D-F165-4DBD-BF43-9B71769360CA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5BCD2E4A-9FDA-4CFC-B241-6A45211454B2} = {B1D8E66E-1883-4AA0-AF9D-B38D678388F0}
+		{7D1B0B1D-F165-4DBD-BF43-9B71769360CA} = {A672E583-D44B-4F25-891B-143898CF0F29}
+	EndGlobalSection
+EndGlobal

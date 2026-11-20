@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0-windows;net6.0-windows</TargetFrameworks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <AssemblyName>CouiSharp</AssemblyName>
+    <RootNamespace>CouiSharp</RootNamespace>
+    <Version>0.1.0</Version>
+    <Authors>CouiSharp contributors</Authors>
+    <Description>A ColorOS 17 (COUI) styled control library for WinForms: squircle cards, capsule buttons, tonal accents, high-DPI metrics.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Icons\*.bmp" />
+  </ItemGroup>
+
+</Project>

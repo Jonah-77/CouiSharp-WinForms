@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+*.user
+*.suo
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.sln.bak
+
+# NuGet
+packages/
+*.nupkg
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Local scratch
+*.log
+*.tmp
