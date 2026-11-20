@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.4 — 2026-11-20
+
+### Fixed
+
+- **The square remnant at the corners of cards and input fields was a square backdrop, not a
+  stroke mismatch.** `CouiBackdrop.Resolve` began its walk at the control itself, so every control
+  with an opaque `SurfaceColor` (cards, outlined text fields) flooded its whole client rectangle
+  with its own surface colour before drawing the rounded shape. The radius then only existed in the
+  hairline on top: the four corners kept the square fill and showed as an L-shaped ghost outside
+  the curve. The walk now starts at the parent (`CouiBackdrop.Resolve`), so the corner shows the
+  surface behind the control, and `CouiBackdrop.ResolveSurface` resolves the control's own surface
+  for flattening translucent tokens.
+
+### Changed
+
+- `CouiBackdrop.ResolveSurface` is new; it keeps `CouiControl.Solid` and `CouiTextBox.FieldFill`
+  compositing onto the fill they actually paint on.
+
+### Note
+
+- The 0.1.3 entry below diagnosed this defect as a fill/hairline curve mismatch. That change
+  removed the seam between fill and line, but it could not remove the square fill underneath; the
+  ghost survived because the fill itself never followed the radius.
+
 ## 0.1.3 — 2026-11-20
 
 ### Fixed

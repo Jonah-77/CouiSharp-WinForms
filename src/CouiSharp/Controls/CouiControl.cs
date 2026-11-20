@@ -226,7 +226,7 @@ public abstract class CouiControl : Control
     /// are flattened before they reach <see cref="TextRenderer"/>.
     /// </summary>
     protected Color Solid(Color color)
-        => color.A == 255 ? color : CouiTheme.Composite(CouiBackdrop.Resolve(this), color);
+        => color.A == 255 ? color : CouiTheme.Composite(CouiBackdrop.ResolveSurface(this), color);
 
     /// <summary>Text renderer wrapper that keeps ClearType and a consistent vertical alignment.</summary>
     protected void DrawText(Graphics g, string text, Font font, Color color, Rectangle bounds,

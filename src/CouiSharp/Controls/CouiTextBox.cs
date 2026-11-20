@@ -92,8 +92,9 @@ public class CouiTextBox : CouiControl
 
     private Color FieldFill()
     {
-        // Resolve from the parent: calling Resolve(this) would re-enter SurfaceColor.
-        Color page = Parent == null ? CouiTheme.Colors.Card : CouiBackdrop.Resolve(Parent);
+        // The surface the field sits on, not the one it paints: resolving from this control would
+        // re-enter SurfaceColor, and resolving from its parent's parent skipped the card colour.
+        Color page = Parent == null ? CouiTheme.Colors.Card : CouiBackdrop.ResolveSurface(Parent);
         return CouiTheme.Composite(page, Palette.Container8);
     }
 

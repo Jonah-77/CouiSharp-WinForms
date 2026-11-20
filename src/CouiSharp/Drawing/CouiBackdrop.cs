@@ -9,12 +9,25 @@ namespace CouiSharp.Drawing;
 /// </summary>
 public static class CouiBackdrop
 {
-    /// <summary>Walks the parent chain and composites until an opaque color is found.</summary>
-    public static Color Resolve(Control control)
+    /// <summary>
+    /// Resolves the surface a control sits on. The walk starts at the control's parent: starting at
+    /// the control itself returned its own surface color, which filled the whole client rect and
+    /// turned every rounded shape into a square with a rounded hairline drawn over it — the corners
+    /// showed a rectangular remnant (an "L") instead of the bare backdrop.
+    /// </summary>
+    public static Color Resolve(Control control) => ResolveCore(control?.Parent);
+
+    /// <summary>
+    /// Resolves the surface a control's own paint lands on, i.e. starting at the control itself.
+    /// Used to flatten translucent tokens (text colors, hairlines) onto the fill they sit on.
+    /// </summary>
+    public static Color ResolveSurface(Control control) => ResolveCore(control);
+
+    private static Color ResolveCore(Control start)
     {
         Color result = Color.Transparent;
 
-        for (Control c = control; c != null; c = c.Parent)
+        for (Control c = start; c != null; c = c.Parent)
         {
             Color layer = c.BackColor;
             if (c is Controls.CouiControl cc && cc.SurfaceColor.A > 0) layer = cc.SurfaceColor;
