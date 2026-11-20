@@ -20,7 +20,7 @@ public class CouiChip : CouiControl
         Cursor = Cursors.Hand;
         AccessibleRole = AccessibleRole.CheckButton;
         Size = new Size(Dp(80), Dp(CouiShape.ChipHeight));
-        SetThemeFont(CouiTypography.Caption());
+        Font = CouiTypography.Caption();
     }
 
     protected override bool Interactive => true;
@@ -72,7 +72,7 @@ public class CouiChip : CouiControl
 
     protected override void ApplyMetrics()
     {
-        if (!HasHostFont) SetThemeFont(CouiTypography.Caption());
+        Font = CouiTypography.Caption();
         Size = new Size(Math.Max(Width, GetPreferredSize(Size.Empty).Width), Dp(CouiShape.ChipHeight));
         base.ApplyMetrics();
     }
@@ -104,3 +104,4 @@ public class CouiChip : CouiControl
     protected override void OnGotFocus(EventArgs e) { base.OnGotFocus(e); Invalidate(); }
     protected override void OnLostFocus(EventArgs e) { base.OnLostFocus(e); Invalidate(); }
 }
+

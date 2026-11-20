@@ -5,20 +5,11 @@ namespace CouiSharp.Theme;
 /// <summary>
 /// COUI type scale (<c>coui-ui/theme/TextStyles.kt</c>). Sizes are sp values converted to points
 /// with the familiar 0.75 factor, then scaled by display density (<see cref="CouiTheme.Density"/>).
-/// <para>
-/// Every face is 霞鹜 (LXGW). <see cref="CouiTheme.FontFace"/> picks 文楷 (default) or 臻楷; the
-/// weight split is resolved as a family name, because CJK releases ship "霞鹜文楷 Medium" as its own
-/// family instead of a Bold style of 霞鹜文楷.
-/// </para>
 /// </summary>
 public static class CouiTypography
 {
-    /// <summary>Family the app renders in, after face resolution (falls back to Microsoft YaHei UI).</summary>
-    public static string Family
-        => CouiFonts.Resolve(CouiTheme.FontFace, false) ?? CouiFonts.Resolve(CouiTheme.FontFace, true) ?? CouiFonts.FallbackFamily;
-
-    /// <summary>True when the configured 霞鹜 face is actually installed.</summary>
-    public static bool UsingBundledFace => CouiFonts.IsAvailable(CouiTheme.FontFace);
+    /// <summary>Family the UI renders in. A host can derive its own scale from this one.</summary>
+    public const string Family = "Microsoft YaHei UI";
 
     /// <summary>18sp / medium — section headers and preference group titles.</summary>
     public static Font Header() => Create(18f, true);
@@ -52,7 +43,16 @@ public static class CouiTypography
         float points = sp * 0.75f * CouiTheme.Scale;
         // Keep a floor so text stays legible when a host forces 96 dpi on a scaled display.
         points = Math.Max(points, 6f);
-        return CouiFonts.Create(CouiTheme.FontFace, points, bold);
+        var style = bold ? FontStyle.Bold : FontStyle.Regular;
+        try
+        {
+            return new Font(Family, points, style, GraphicsUnit.Point);
+        }
+        catch (ArgumentException)
+        {
+            // Windows without the CJK UI font still needs a readable fallback.
+            return new Font("Segoe UI", points, style, GraphicsUnit.Point);
+        }
     }
 
     /// <summary>Preferred line box for a font, mirroring COUI's lineSpacingMultiplier behaviour.</summary>

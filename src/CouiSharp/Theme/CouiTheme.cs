@@ -18,7 +18,6 @@ public enum CouiThemeMode
 public static class CouiTheme
 {
     private static CouiThemeMode _mode = CouiThemeMode.System;
-    private static CouiFontFace _fontFace = CouiFontFace.WenKai;
     private static Color _seed = Color.FromArgb(0xFF, 0x00, 0x80, 0xFF);
     private static float _scale = 1f;
     private static bool? _systemDarkCache;
@@ -64,21 +63,6 @@ public static class CouiTheme
             float v = Math.Clamp(value, 0.75f, 2.5f);
             if (Math.Abs(_scale - v) < 0.0001f) return;
             _scale = v;
-            Raise();
-        }
-    }
-
-    /// <summary>
-    /// Typeface family for the whole app: 霞鹜文楷 (default) or 霞鹜臻楷, the bolder derivative.
-    /// CouiSharp never mixes in a second family — this is the only switch that changes the face.
-    /// </summary>
-    public static CouiFontFace FontFace
-    {
-        get => _fontFace;
-        set
-        {
-            if (_fontFace == value) return;
-            _fontFace = value;
             Raise();
         }
     }

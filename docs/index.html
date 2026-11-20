@@ -111,9 +111,9 @@
   <header>
     <span class="eyebrow">WinForms · C#</span>
     <h1>CouiSharp</h1>
-    <p class="lede">按 ColorOS 17（COUI）的令牌做的一套 WinForms 控件库：12dp 超椭圆卡片、44dp 胶囊按钮、10dp 输入框，全程序只用霞鹜文楷一套字族，图标全部自绘，另有一层 CPU 模糊玻璃。</p>
+    <p class="lede">按 ColorOS 17（COUI）的令牌做的一套 WinForms 控件库：12dp 超椭圆卡片、44dp 胶囊按钮、10dp 输入框；20 个图标全部自绘；浮动条的毛玻璃交给 Windows 合成器，不在托管代码里模糊像素。</p>
     <div class="meta">
-      <span class="chip"><strong>0.2.0</strong></span>
+      <span class="chip"><strong>0.2.1</strong></span>
       <span class="chip"><strong>独立</strong> 于 MiuixSharp</span>
       <span class="chip">net8.0 / net6.0</span>
       <span class="chip">MIT</span>
@@ -151,22 +151,9 @@
           <tr><td>分隔线</td><td>12% 前景色</td><td>行间与卡片描边</td></tr>
           <tr><td>圆角</td><td>卡片 12dp、按钮胶囊、输入框 10dp</td><td>形状体系</td></tr>
           <tr><td>尺寸</td><td>按钮 44dp、开关 36×22、行高 48dp</td><td>组件度量</td></tr>
-          <tr><td>字体</td><td>霞鹜文楷（可切霞鹜臻楷），正文 15sp、说明 13sp、标题 18/20sp</td><td>TextStyles.kt + OFL</td></tr>
+          <tr><td>字体</td><td>正文 15sp、说明 13sp、标题 18/20sp</td><td>TextStyles.kt</td></tr>
         </tbody>
       </table>
-    </div>
-  </section>
-
-  <section>
-    <h2>字体：全程序只有一个字族</h2>
-    <p class="sub">默认霞鹜文楷；在「字体」一行切到霞鹜臻楷即可整体加粗。CJK 字重是独立 family，所以按角色映射族名，而不是请求 Bold。</p>
-    <div class="grid3">
-      <div class="tile"><h3>霞鹜文楷</h3><p>默认字族，正文 Regular、标题与按钮 Medium 两个 family。</p></div>
-      <div class="tile"><h3>霞鹜臻楷</h3><p>可选加粗衍生，CouiTheme.FontFace 一个属性切换全局。</p></div>
-      <div class="tile"><h3>注册方式</h3><p>AddFontResourceEx(FR_PRIVATE)：TextRenderer 走 GDI，私藏字体集合会被静默忽略。</p></div>
-      <div class="tile"><h3>回退</h3><p>未装霞鹜时回退 Microsoft YaHei UI，绝不落到随机系统字体。</p></div>
-      <div class="tile"><h3>宿主字体</h3><p>控件记住宿主显式设过的字体，换字族或改密度时不会把它覆盖掉。</p></div>
-      <div class="tile"><h3>体积</h3><p>两个 .ttf 约 66 MB，不进仓库，随发布包附带。</p></div>
     </div>
   </section>
 
@@ -179,21 +166,21 @@
     </figure>
     <div class="grid3">
       <div class="tile"><h3>CouiIcon</h3><p>Kind / IconSize / Tint 三个属性，默认跟随主题前景色。</p></div>
-      <div class="tile"><h3>不占底色</h3><p>FillsBackdrop = false：图标落在玻璃上不会带出一块页面颜色的方块。</p></div>
+      <div class="tile"><h3>不占底色</h3><p>FillsBackdrop = false：图标落在半透明窗口上不会带出一块页面颜色的方块。</p></div>
       <div class="tile"><h3>为什么自己画</h3><p>COUI 图标是从 ColorOS 系统包描出来的，授权不清；自绘既干净又能按需加。</p></div>
     </div>
   </section>
 
   <section>
-    <h2>玻璃：B 方案，模糊的是库自己画的页面</h2>
-    <p class="sub">WinForms 读不回自绘控件的像素（DrawToBitmap 是空图，PrintWindow 与真实帧不一致），所以玻璃改为重画控件树 + CPU 盒式模糊。</p>
+    <h2>毛玻璃：用 Windows 自己的，不画像素</h2>
+    <p class="sub">CouiBackdropEffect 只调两个原生入口：Win11 22H2 起走 DWM 的系统背板类型，更老的机器退回 SetWindowCompositionAttribute 的亚克力策略。模糊由合成器做，托管的绘制时间成本是零。</p>
     <div class="grid3">
-      <div class="tile"><h3>能做</h3><p>透出库自己画的卡片、按钮、文字，悬浮条 / 面板 / 弹层都能用。</p></div>
-      <div class="tile"><h3>做不到</h3><p>桌面壁纸、窗口阴影、别的程序的像素不会透出来；那是合成器的事，需要 Direct2D / Composition。</p></div>
-      <div class="tile"><h3>成本</h3><p>降采样 + 三次盒式模糊，工具条大小几毫秒；页面变了显式 Refresh 一次。</p></div>
-      <div class="tile"><h3>CouiGlassPanel</h3><p>Radius / BlurStrength / TintStrength 三个属性，暗色自动加一档白洗，避免在纯黑页上塌成一个洞。</p></div>
-      <div class="tile"><h3>演示</h3><p>页面底部那条浮动工具条就是它，左侧能看见被模糊的「保存」按钮。</p></div>
-      <div class="tile"><h3>不抢像素</h3><p>采样时跳过玻璃自身，面板永远不会把自己的旧帧当背景。</p></div>
+      <div class="tile"><h3>Win11 22H2+</h3><p>DWMWA_SYSTEMBACKDROP_TYPE：Mica / Acrylic / Tabbed，就是「设置」和开始菜单用的那一套。</p></div>
+      <div class="tile"><h3>Win10 1803+</h3><p>accent policy 的 ACCENT_ENABLE_ACRYLICBLURBEHIND；tint 的字节序是 0xAABBGGRR，和 GDI+ 反着。</p></div>
+      <div class="tile"><h3>替你处理掉的细节</h3><p>全 -1 的边框外延（否则背板止于边框）、圆角偏好（不再用 Region 裁）、驱动拒绝 DWM 属性时回退。</p></div>
+      <div class="tile"><h3>用在哪</h3><p>只有顶层窗口能透出来，所以是浮动条、调色盘、Toast 这类小表面，不是页面里的控件。</p></div>
+      <div class="tile"><h3>演示</h3><p>页面底部那条浮动条是一个无边框子窗口，里面只放三个 CouiIcon，模糊的「保存」按钮就在它左端。</p></div>
+      <div class="tile"><h3>顺手的事</h3><p>背板跟着壁纸和系统的深浅色走，ApplyDarkMode 把窗口的明暗意图交给 DWM。</p></div>
     </div>
   </section>
 
@@ -241,8 +228,8 @@ card.Controls.AddRange(new Control[] { title, toggle, save });</pre>
           <tr><th>圆角</th><td>不裁 Region：150% DPI 下会变成虚线边，改为按路径绘制。</td></tr>
           <tr><th>底色</th><td>自绘前先解析父级链路（含自定义 SurfaceColor），圆角外不会露出异物。</td></tr>
           <tr><th>文字</th><td>半透明令牌先与底色合成，再交给 TextRenderer，避免 GDI 把 26% 文字画成纯黑。</td></tr>
-          <tr><th>字体</th><td>点数本身随 DPI 走，只额外乘用户显示比例，避免 150% 下双重放大。字重按族名解析，不合成 Bold。</td></tr>
-          <tr><th>玻璃</th><td>重画控件树到离屏位图再模糊，跳过玻璃自身；不做桌面级背景模糊。</td></tr>
+          <tr><th>字体</th><td>点数本身随 DPI 走，只额外乘用户显示比例，避免 150% 下双重放大。</td></tr>
+          <tr><th>毛玻璃</th><td>交给 Windows 合成器（DWM 系统背板 / 亚克力策略），托管代码不碰像素；只对顶层窗口有效。</td></tr>
           <tr><th>度量</th><td>句柄创建、DPI 变化、主题变化、尺寸变化都会触发 ApplyMetrics 重算。</td></tr>
         </tbody>
       </table>
@@ -250,9 +237,12 @@ card.Controls.AddRange(new Control[] { title, toggle, save });</pre>
   </section>
 
   <footer>
-    <p>设计令牌来自 <a href="https://github.com/suqi8/coui">COUI</a>（Apache-2.0），字体为 <a href="https://github.com/lxgw/LxgwWenKai">霞鹜文楷</a> / <a href="https://github.com/lxgw/LxgwZhenKai">霞鹜臻楷</a>（SIL OFL 1.1），图标为本库自绘。本库以 MIT 发布，不复制 COUI 源码，只复用令牌与重定主题规范。与 OPPO / ColorOS 无隶属关系。</p>
+    <p>设计令牌来自 <a href="https://github.com/suqi8/coui">COUI</a>（Apache-2.0），图标为本库自绘。本库以 MIT 发布，不复制 COUI 源码，只复用令牌与重定主题规范。与 OPPO / ColorOS 无隶属关系。</p>
   </footer>
 
 </div>
 </body>
 </html>
+
+
+

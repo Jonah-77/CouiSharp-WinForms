@@ -25,8 +25,7 @@ public class CouiIcon : CouiControl
         TabStop = false;
         AccessibleRole = AccessibleRole.Graphic;
         Size = new Size(Dp(24), Dp(24));
-        // Icons carry no text: the themed body font would only add a font-change notification.
-        SetThemeFont(CouiTypography.Body());
+        Font = CouiTypography.Body();
     }
 
     /// <summary>Which outline to draw.</summary>
@@ -128,3 +127,5 @@ public class CouiIcon : CouiControl
 
     public override Size GetPreferredSize(Size proposedSize) => new Size(Dp(_iconSize), Dp(_iconSize));
 }
+
+

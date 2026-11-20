@@ -1,19 +1,41 @@
 # Changelog
 
-## 0.2.0 — 2026-11-20
+## 0.2.1 — 2026-11-20
 
-Takes the three things the port had been missing: the typeface, the icon set and a glass layer.
+Drops both optional layers that shipped in 0.2.0 (the bundled typefaces and the CPU-blurred glass
+panel) and replaces the glass with the backdrop Windows already draws.
 
 ### New
 
-- **霞鹜文楷 is the app font.** `CouiFonts` registers the bundled `.ttf` files with
-  `AddFontResourceEx(FR_PRIVATE | FR_NOT_ENUM)` and resolves faces by family name. `CouiTypography`
-  now maps roles to families: headers/titles/buttons use the `霞鹜文楷 Medium` family, body text the
-  regular one, because CJK releases ship weights as separate families rather than as `Bold` styles of
-  one family. Missing fonts fall back to `Microsoft YaHei UI`.
-- **`CouiTheme.FontFace`** switches the whole app between 霞鹜文楷 (default) and 霞鹜臻楷, the bolder
-  derivative. The demo exposes it as a "字族" row in a new 字体 card, and `--face=zhenkai` sets it
-  from the command line.
+- **`CouiBackdropEffect` + `CouiBackdropStyle` (Windows-native backdrop)** — `Mica`, `Acrylic` and
+  `Tabbed` through `DwmSetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE)` on Windows 11 22H2+, with an
+  acrylic accent-policy fallback (`SetWindowCompositionAttribute`) on Windows 10 1803 and later.
+  `Apply` handles the `-1` frame margins, the round corner preference and the `0xAABBGGRR` byte
+  order of the legacy tint; `ApplyDarkMode` hands the window's dark intent to the compositor and
+  `Clear` restores a plain window. The demo floats a borderless bar over the page and lets DWM
+  compose it.
+
+### Removed
+
+- **`CouiGlassPanel` and `CouiGlass`** — the panel re-rendered the whole control tree into an
+  off-screen bitmap and box-blurred it on the CPU. It was expensive, needed a manual `Refresh()`
+  after any repaint underneath, and still only blurred the library's own paint tree. The OS
+  compositor does the same job for free and shows the real backdrop.
+- **`CouiControl.PaintSnapshot`** and the `OnThemeChangedCore` hook, which existed only to serve
+  that panel. Self-painted controls still repaint on a host `Font` change.
+
+### Changed
+
+- `CouiControl.FillsBackdrop` stays: glyph controls still opt out of an opaque backdrop, which is
+  what lets a `CouiIcon` sit on a translucent window without a rectangle of colour behind it.
+- README, demo and the Pages site describe the native backdrop instead of the CPU one.
+
+## 0.2.0 — 2026-11-20
+
+Adds the icon set and a glass layer.
+
+### New
+
 - **`CouiIcon` + `CouiIconPaths`: 20 hand-drawn icons** — Search, Close, Add, Minus, More,
   ChevronLeft/Right/Up/Down, ArrowBack, Check, Delete, Edit, Settings, Info, Warning, Refresh,
   Download, Copy, Share. 24dp canvas, 1.5dp round-cap stroke, 2dp margin, `GraphicsPath` outlines
@@ -30,6 +52,8 @@ Takes the three things the port had been missing: the typeface, the icon set and
 - **Icons were joined into polygons.** Consecutive `GraphicsPath.AddLine` calls continue the current
   figure, so an "X" closed into a hexagon, a "+" gained a diagonal and every gear spoke turned into a
   connecting fan. Each stroke now starts its own figure.
+- **Self-painted controls did not repaint when a host replaced `Font`.** `CouiControl` now
+  invalidates on a font change, so a heading or caption assigned after creation is shown immediately.
 
 ### Note
 

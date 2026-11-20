@@ -15,10 +15,9 @@ public sealed class DemoForm : Form
 {
     private readonly Panel _page;
     private readonly CouiLabel _status;
-    private readonly CouiGlassPanel _glass;
-    private readonly CouiIcon[] _glassIcons;
+    private Form _bar;
+    private CouiIcon[] _barIcons = Array.Empty<CouiIcon>();
     private float _builtDensity;
-    private CouiFontFace _builtFace;
     private int _pageWidth = -1;
     private bool _rebuilding;
     private bool _pendingLayout;
@@ -48,18 +47,11 @@ public sealed class DemoForm : Form
             Height = Px(24)
         };
 
-        // The frosted bar floats above the page: it samples the page it covers, blurs it on the CPU
-        // and clips the result to a squircle. This is the visible proof of the "B" rendering plan.
-        _glass = new CouiGlassPanel { Radius = 22f, BlurStrength = 10f, TintStrength = 0.14f };
-        _glassIcons = new CouiIcon[]
-        {
-            new CouiIcon { Kind = CouiIconKind.Check },
-            new CouiIcon { Kind = CouiIconKind.Download },
-            new CouiIcon { Kind = CouiIconKind.Share }
-        };
-        foreach (CouiIcon icon in _glassIcons) _glass.Controls.Add(icon);
-        Controls.Add(_glass);
-        _glass.BringToFront();
+        // The floating bar is a separate borderless window whose backdrop is drawn by Windows
+        // (DWM system backdrop, or the acrylic accent policy on Windows 10). We never blur pixels
+        // ourselves: the bar only draws three glyphs on top of what the compositor puts behind it.
+        // It is created once the page has a position, so it never flashes at the wrong place.
+        _bar = null;
 
         CouiTheme.Changed += OnThemeChanged;
         // Rebuild only on a width change: the page also raises SizeChanged when a scrollbar appears
@@ -79,42 +71,14 @@ public sealed class DemoForm : Form
     {
         BackColor = CouiTheme.Colors.BackgroundWithCard;
         _page.BackColor = CouiTheme.Colors.BackgroundWithCard;
+        if (_bar != null && !_bar.IsDisposed) CouiBackdropEffect.ApplyDarkMode(_bar.Handle, CouiTheme.IsDark);
         if (Math.Abs(_builtDensity - Density) > 0.01f)
         {
             // Never rebuild inside a control's own event: the scale slider raises ValueChanged
             // while dragging, and disposing it there killed the drag (and its status label).
             _pendingLayout = true;
         }
-        if (_builtFace != CouiTheme.FontFace)
-        {
-            // A face switch is applied in place instead of rebuilding the page: recreation reset the
-            // scroll position, so switching 字族 dumped the user back to the top of the settings page.
-            _builtFace = CouiTheme.FontFace;
-            ReapplyFace(_page);
-        }
         Invalidate(true);
-    }
-
-    /// <summary>
-    /// Re-derives every control's font from its current point size and weight. The demo sets fonts
-    /// per control (title, header, body, caption), so the role is encoded in the size; swapping the
-    /// family keeps those roles and only changes the face.
-    /// </summary>
-    private void ReapplyFace(Control parent)
-    {
-        foreach (Control child in parent.Controls)
-        {
-            Font old = child.Font;
-            if (old is not null)
-            {
-                bool strong = (old.Style & FontStyle.Bold) == FontStyle.Bold;
-                Font swapped = CouiFonts.Create(CouiTheme.FontFace, old.SizeInPoints, strong);
-                if (swapped.Name != old.Name || swapped.Style != old.Style) child.Font = swapped;
-                else swapped.Dispose();
-            }
-            if (child is CouiChip chip) chip.Size = chip.GetPreferredSize(Size.Empty);
-            ReapplyFace(child);
-        }
     }
 
     private float Density => DeviceDpi / 96f * CouiTheme.Scale;
@@ -122,37 +86,66 @@ public sealed class DemoForm : Form
     protected override void OnShown(EventArgs e)
     {
         base.OnShown(e);
-        LayoutGlass();
+        EnsureBar();
+        LayoutBar();
         Rebuild();
+    }
+
+    private void EnsureBar()
+    {
+        if (_bar != null || !CouiBackdropEffect.IsSupported) return;
+        _bar = new Form
+        {
+            FormBorderStyle = FormBorderStyle.None,
+            ShowInTaskbar = false,
+            StartPosition = FormStartPosition.Manual,
+            BackColor = Color.FromArgb(0x20, 0x20, 0x20),
+            Owner = this
+        };
+        _barIcons = new CouiIcon[]
+        {
+            new CouiIcon { Kind = CouiIconKind.Check },
+            new CouiIcon { Kind = CouiIconKind.Download },
+            new CouiIcon { Kind = CouiIconKind.Share }
+        };
+        foreach (CouiIcon icon in _barIcons) _bar.Controls.Add(icon);
+        _bar.Show();
+        CouiBackdropEffect.Apply(_bar, CouiBackdropStyle.Acrylic);
+        CouiBackdropEffect.ApplyDarkMode(_bar.Handle, CouiTheme.IsDark);
     }
 
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);
-        LayoutGlass();
+        LayoutBar();
     }
 
-    /// <summary>Places the floating glass bar and its icons in dp units.</summary>
-    private void LayoutGlass()
+    protected override void OnMove(EventArgs e)
     {
-        if (_glass is null) return;
+        base.OnMove(e);
+        // The bar is its own window, so it has to be carried along when the page moves.
+        LayoutBar();
+    }
+
+    /// <summary>Places the floating acrylic bar and its icons in dp units.</summary>
+    private void LayoutBar()
+    {
+        if (_bar is null || _bar.IsDisposed) return;
         int height = Px(68);
         int width = Math.Min(Px(280), Math.Max(Px(160), ClientSize.Width - Px(40)));
-        _glass.Bounds = new Rectangle(
+        Point origin = PointToScreen(new Point(
             (ClientSize.Width - width) / 2,
-            ClientSize.Height - height - Px(20),
-            width,
-            height);
+            ClientSize.Height - height - Px(20)));
+        _bar.Bounds = new Rectangle(origin, new Size(width, height));
         int iconSize = Px(24);
         int spacing = width / 3;
-        for (int i = 0; i < _glassIcons.Length; i++)
+        for (int i = 0; i < _barIcons.Length; i++)
         {
-            _glassIcons[i].IconSize = 24f;
-            _glassIcons[i].Size = new Size(iconSize, iconSize);
-            _glassIcons[i].Location = new Point(spacing * i + (spacing - iconSize) / 2,
-                                                (height - iconSize) / 2);
+            _barIcons[i].IconSize = 24f;
+            _barIcons[i].Size = new Size(iconSize, iconSize);
+            _barIcons[i].Location = new Point(spacing * i + (spacing - iconSize) / 2,
+                                            (height - iconSize) / 2);
         }
-        _glass.Refresh();
     }
 
     protected override void OnDpiChanged(DpiChangedEventArgs e)
@@ -190,7 +183,6 @@ public sealed class DemoForm : Form
 
             ClearPage();
             _builtDensity = Density;
-            _builtFace = CouiTheme.FontFace;
 
             int margin = Px(16);
             int cardWidth = Math.Min(Px(428), Math.Max(Px(240), _page.ClientSize.Width - margin * 2));
@@ -211,7 +203,6 @@ public sealed class DemoForm : Form
             y = BuildAppearance(left, y, cardWidth);
             y = BuildNotifications(left, y, cardWidth);
             y = BuildComponents(left, y, cardWidth);
-            y = BuildTypography(left, y, cardWidth);
             y = BuildIcons(left, y, cardWidth);
             y = BuildAbout(left, y, cardWidth);
 
@@ -227,7 +218,7 @@ public sealed class DemoForm : Form
             _pendingLayout = false;
         }
 
-        LayoutGlass();
+        LayoutBar();
         DumpLayout();
     }
 
@@ -530,43 +521,9 @@ public sealed class DemoForm : Form
             Variant = CouiButtonVariant.Text,
             Bounds = new Rectangle(Px(236), buttonY, Px(148), Px(CouiShape.ButtonHeight))
         };
-        text.Click += (_, _) => _status.Text = "CouiSharp 0.2.0";
+        text.Click += (_, _) => _status.Text = "CouiSharp 0.2.1";
         card.Controls.Add(text);
 
-        return y;
-    }
-
-    private int BuildTypography(int left, int y, int width)
-    {
-        int chipY = Px(44) + (Px(CouiShape.RowHeight) - Px(CouiShape.ChipHeight)) / 2;
-        int height = Px(44) + Px(CouiShape.RowHeight) + Px(8);
-        var card = Card(left, ref y, width, height, "字体");
-
-        RowText(card, "字族", 0, Px(96));
-
-        CouiFontFace[] faces = { CouiFontFace.WenKai, CouiFontFace.ZhenKai };
-        int chipX = Px(100);
-        foreach (CouiFontFace face in faces)
-        {
-            var chip = new CouiChip
-            {
-                Text = CouiFonts.DisplayName(face),
-                Checked = CouiTheme.FontFace == face,
-                Enabled = CouiFonts.IsAvailable(face)
-            };
-            chip.Size = chip.GetPreferredSize(Size.Empty);
-            chip.Location = new Point(chipX, chipY);
-            chip.CheckedChanged += (_, _) =>
-            {
-                if (_syncChips) return;
-                if (!chip.Checked) { chip.Checked = true; return; }
-                SelectOnly(card, chip);
-                CouiTheme.FontFace = face;
-                _status.Text = "字体：" + CouiFonts.DisplayName(face);
-            };
-            card.Controls.Add(chip);
-            chipX += chip.Width + Px(8);
-        }
         return y;
     }
 
@@ -606,9 +563,9 @@ public sealed class DemoForm : Form
 
         var lines = new[]
         {
-            "CouiSharp 0.2.0 · ColorOS 17 视觉令牌",
-            "霞鹜文楷 / 臻楷 · 20 个自绘图标",
-            "CPU 模糊玻璃 · 与 MiuixSharp 相互独立"
+            "CouiSharp 0.2.1 · ColorOS 17 视觉令牌",
+            "20 个自绘图标 · 系统原生毛玻璃",
+            "与 MiuixSharp 相互独立"
         };
 
         for (int i = 0; i < lines.Length; i++)
@@ -627,10 +584,24 @@ public sealed class DemoForm : Form
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) CouiTheme.Changed -= OnThemeChanged;
+        if (disposing)
+        {
+            CouiTheme.Changed -= OnThemeChanged;
+            // An owned window is not disposed with its owner.
+            _bar?.Dispose();
+        }
         base.Dispose(disposing);
     }
 }
+
+
+
+
+
+
+
+
+
 
 
 

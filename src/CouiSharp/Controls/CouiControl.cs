@@ -17,8 +17,6 @@ public abstract class CouiControl : Control
     private bool _hover;
     private bool _pressed;
     private bool _themeHooked;
-    private bool _themeFontGuard;
-    private bool _hostFont;
 
     protected CouiControl()
     {
@@ -33,35 +31,14 @@ public abstract class CouiControl : Control
 
         BackColor = Color.Transparent;
         DoubleBuffered = true;
-        SetThemeFont(CouiTypography.Body());
+        Font = CouiTypography.Body();
     }
-
-    /// <summary>
-    /// Assigns a theme-derived font without marking it as a host override, so a later
-    /// <see cref="CouiTheme.FontFace"/> switch or density change can re-derive it.
-    /// </summary>
-    protected void SetThemeFont(Font font)
-    {
-        _themeFontGuard = true;
-        try
-        {
-            Font = font;
-        }
-        finally
-        {
-            _themeFontGuard = false;
-        }
-    }
-
-    /// <summary>True when the host assigned its own font, which theme changes must not overwrite.</summary>
-    protected bool HasHostFont => _hostFont;
 
     protected override void OnFontChanged(EventArgs e)
     {
-        if (!_themeFontGuard) _hostFont = true;
         base.OnFontChanged(e);
         // Self-painted controls do not get the automatic invalidate a Label would, so a host that
-        // changes Font after creation (a face switch, a heading override) must repaint explicitly.
+        // changes Font after creation (a heading override) must repaint explicitly.
         Invalidate();
     }
 
@@ -142,20 +119,14 @@ public abstract class CouiControl : Control
     private void OnThemeChanged(object sender, EventArgs e)
     {
         if (!IsHandleCreated) return;
-        OnThemeChangedCore();
         ApplyMetrics();
         Invalidate();
     }
 
-    /// <summary>Hook for controls that cache theme-dependent bitmaps (glass backdrops).</summary>
-    protected virtual void OnThemeChangedCore()
-    {
-    }
-
     /// <summary>
     /// Whether this control paints an opaque backdrop under its own shape. Glyph-like controls
-    /// (icons) turn it off so whatever is behind them — including a frosted glass layer — shows
-    /// through instead of a rectangle of page colour.
+    /// (icons) turn it off so the surface behind them shows through instead of a rectangle of
+    /// page colour.
     /// </summary>
     protected virtual bool FillsBackdrop => true;
 
@@ -172,28 +143,6 @@ public abstract class CouiControl : Control
 
     /// <summary>Paints the control surface. The backdrop is already filled.</summary>
     protected abstract void OnPaintContent(Graphics g);
-
-    /// <summary>
-    /// Renders this control into a foreign <see cref="Graphics"/> at <paramref name="location"/>
-    /// (relative to the target's origin). Used by <see cref="CouiGlass"/> to rebuild the page
-    /// underneath a glass panel: WinForms cannot read back another control's pixels, but every
-    /// CouiSharp control can repaint itself on request.
-    /// </summary>
-    internal void PaintSnapshot(Graphics g, Point location)
-    {
-        GraphicsState state = g.Save();
-        try
-        {
-            g.TranslateTransform(location.X, location.Y);
-            g.SetClip(ClientRectangle, CombineMode.Intersect);
-            using var args = new PaintEventArgs(g, ClientRectangle);
-            OnPaint(args);
-        }
-        finally
-        {
-            g.Restore(state);
-        }
-    }
 
     protected override void OnMouseEnter(EventArgs e)
     {
@@ -303,3 +252,4 @@ public abstract class CouiControl : Control
             flags | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
     }
 }
+

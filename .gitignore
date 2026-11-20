@@ -22,6 +22,4 @@ desktop.ini
 *.log
 *.tmp
 
-# Bundled 霞鹜 fonts (OFL, ~66 MB) - shipped in the release zip, not in git
-fonts/*.ttf
-fonts/*.otf
+

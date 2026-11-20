@@ -49,27 +49,6 @@ colors.
 | `CouiDivider` | 1dp rule with the 16dp leading inset |
 | `CouiLabel` | Text primitive so labels never leave stale pixels on a painted card |
 | `CouiIcon` | Vector icon from the built-in set, stroked on a 24dp canvas in the theme colour |
-| `CouiGlassPanel` | Frosted panel: the page behind it is re-rendered, blurred and clipped to a squircle |
-
-## Typeface
-
-The whole UI runs in **霞鹜文楷** (LXGW WenKai, OFL-1.1) — a text-weight kaiti — and switches to
-**霞鹜臻楷** (LXGW ZhenKai) when a host wants heavier text. There is exactly one family in the
-program, so the two faces are the only typographic switch:
-
-```csharp
-CouiFonts.Register(Path.Combine(AppContext.BaseDirectory, "fonts")); // process-local, FR_PRIVATE
-CouiTheme.FontFace = CouiFontFace.ZhenKai;                          // default: WenKai
-```
-
-CJK 霞鹜 releases ship each weight as its own family (`霞鹜文楷` vs `霞鹜文楷 Medium`), so the
-library maps *roles* to family names instead of asking for `FontStyle.Bold`: headers, titles and
-buttons use the Medium family, body text the regular one. When no 霞鹜 face is installed the
-library falls back to `Microsoft YaHei UI` rather than rendering in a random default.
-
-Fonts are loaded with `AddFontResourceEx(FR_PRIVATE | FR_NOT_ENUM)`, not `PrivateFontCollection`:
-`TextRenderer` is GDI-based and silently ignores private-collection fonts, which made every label
-fall back to a system face.
 
 ## Icons
 
@@ -80,22 +59,44 @@ Settings  Info  Warning  Refresh  Download  Copy  Share`
 
 Every icon uses a 24dp canvas, a 1.5dp stroke with round caps and a 2dp safety margin, so it stays
 crisp at any DPI and re-colours with the theme (`CouiIcon.Tint` overrides). Icons paint no backdrop
-(`FillsBackdrop = false`), which is also what lets them sit on top of a glass panel without a
-rectangle of page colour behind them.
+(`FillsBackdrop = false`), so they can sit on a translucent surface without a rectangle of page
+colour behind them.
 
-## Glass (rendering plan "B")
+## Window backdrop
 
-`CouiGlassPanel` blurs the **app's own page**, not the desktop: WinForms cannot read back rendered
-pixels of a self-painted control (`DrawToBitmap` returns blank, `PrintWindow` does not match the
-real frame), so the panel re-renders the control tree into a bitmap, downscales it, runs a box blur
-on the CPU and draws the result clipped to a squircle. A wallpaper or photo behind the window will
-**not** show through; cards, buttons and text of the page will.
+Frosted surfaces are **drawn by Windows, not by this library**. `CouiBackdropEffect` calls the two
+native entry points that do it:
+
+| Build | Path | Styles |
+| --- | --- | --- |
+| Windows 11 22H2+ (22621+) | `DwmSetWindowAttribute(DWMWA_SYSTEMBACKDROP_TYPE)` | `Mica`, `Acrylic`, `Tabbed` |
+| Windows 10 1803+ (17134+) | `SetWindowCompositionAttribute` / accent policy | `Acrylic`, `None` |
 
 ```csharp
-var bar = new CouiGlassPanel { Radius = 22, BlurStrength = 10, TintStrength = 0.14f };
-Controls.Add(bar);
-bar.BringToFront();   // call Refresh() after the page under it changes
+using CouiSharp.Drawing;
+
+var bar = new Form
+{
+    FormBorderStyle = FormBorderStyle.None,
+    ShowInTaskbar = false,
+    Owner = ownerForm,
+    BackColor = Color.FromArgb(0x20, 0x20, 0x20)
+};
+bar.Show();
+CouiBackdropEffect.Apply(bar, CouiBackdropStyle.Acrylic);   // false on unsupported builds
+CouiBackdropEffect.ApplyDarkMode(bar.Handle, CouiTheme.IsDark);
 ```
+
+What the API takes care of: `DwmExtendFrameIntoClientArea` with all `-1` margins (without it the
+backdrop stops at the frame), the rounded corner preference (`DWMWCP_ROUND`, so no `Region` clip
+is needed), the `0xAABBGGRR` byte order of `GradientColor` in the legacy accent path, and a fallback
+from the DWM attribute to the accent policy when a driver rejects it. `Clear` restores a plain
+window.
+
+A WinForms window shows the backdrop only where it does not paint an opaque background, so the
+realistic target is a **small top-level surface**: a floating bar, a colour palette, a toast. The
+demo floats a borderless bar over the page with three `CouiIcon` children and nothing else; the
+system composes the blur, so it costs no paint time and follows the wallpaper and the OS theme.
 
 
 ## Quick start
@@ -117,9 +118,8 @@ Controls.Add(card);
 ```
 
 The demo in `samples/CouiSharp.Demo` is the same page shape as a ColorOS settings screen and
-accepts `--dark`, `--light`, `--accent=green|purple|orange|teal` and `--face=zhenkai` so visual
-states can be reproduced without clicking. Put the `.ttf` files under `fonts/` at the repository
-root and they are copied next to the executable on build.
+accepts `--dark`, `--light` and `--accent=green|purple|orange|teal` so visual states can be
+reproduced without clicking.
 
 ## Design rules the controls follow
 
@@ -150,10 +150,10 @@ PerMonitorV2 aware.
 
 - Controls are **self-painted**, not native wrappers; a `CouiTextBox` hosts a borderless native
   `TextBox` but everything else is drawn by the library.
-- Glass is a **CPU blur of the library's own paint tree**. A window shadow, the desktop wallpaper or
-  another app's pixels never appear through a `CouiGlassPanel`; a real backdrop blur needs a
-  compositor (Direct2D / Composition), which is not part of this release. Glass also does not
-  animate: refresh it explicitly after the page under it changes.
+- Frosted surfaces are **the system's**, not the library's: `CouiBackdropEffect` only works on a
+  top-level window (a `Form`), never on a control inside a page, and the tint follows the OS theme
+  rather than the library palette. Anything that needs per-control transparency still needs a
+  compositor (Direct2D / Composition), which is not part of this release.
 - No shader-based squircle, no metaball/ Lottie effects, no navigation stack — those are COUI
   modules that need effects WinForms cannot cheaply provide.
 - Icon set is the 20 hand-drawn outlines above; COUI's `coui-icons` pack is larger and is not
@@ -163,8 +163,8 @@ PerMonitorV2 aware.
 ## Credits and license
 
 Design tokens are derived from **COUI** (Copyright the COUI contributors, Apache-2.0) and from the
-ColorOS 17 design language. Typefaces are **霞鹜文楷 / 霞鹜臻楷** by LXGW, SIL Open Font License 1.1.
-Icons are drawn for this library, not traced from ColorOS system assets. This library ships under
+ColorOS 17 design language. Icons are drawn for this library, not traced from ColorOS system assets. This library ships under
 the MIT license; see `LICENSE` and `NOTICE`.
 
 Not affiliated with OPPO / ColorOS. ColorOS is a trademark of its owner.
+
